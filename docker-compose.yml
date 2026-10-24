@@ -1,0 +1,26 @@
+# PostgreSQL local para MS-03. El puerto 5433 evita choques con un Postgres ya instalado.
+#   docker compose up -d
+#   php artisan migrate
+services:
+  postgres:
+    image: postgres:16
+    container_name: ms03-postgres
+    environment:
+      POSTGRES_DB: ms03_comercial
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - ms03_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ms03_comercial"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+# RabbitMQ se agrega junto con la capa de Presentacion (consumidores y relay del
+# Outbox); hoy el puerto MessageBroker usa la implementacion de log.
+
+volumes:
+  ms03_pgdata:
