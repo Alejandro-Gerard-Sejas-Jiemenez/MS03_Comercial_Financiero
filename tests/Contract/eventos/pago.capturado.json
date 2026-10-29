@@ -1,0 +1,9 @@
+{
+  "agregado_tipo": "pago",
+  "consume": "MS-02 (confirma la reserva), MS-04, y MS-03 internamente (comision, uso de promocion)",
+  "payload": {
+    "pago_id": "uuid", "reserva_id": "uuid", "cliente_id": "uuid", "anfitrion_id": "uuid", "promocion_id": "uuid?",
+    "subtotal_alojamiento": "decimal", "descuento": "decimal", "cargo_servicio": "decimal", "monto_total": "decimal",
+    "moneda": "currency", "referencia_pasarela": "string"
+  }
+}

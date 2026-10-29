@@ -41,5 +41,54 @@ services:
       - "8080:8080"
 
 
+  # La aplicacion. Necesita APP_KEY en el entorno: `php artisan key:generate --show`.
+  #   APP_KEY=base64:... docker compose up -d --build ms03
+  ms03: &ms03
+    build: .
+    container_name: ms03-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment: &ms03_env
+      APP_KEY: ${APP_KEY:?define APP_KEY (php artisan key:generate --show)}
+      APP_ENV: production
+      APP_DEBUG: "false"
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ms03_comercial
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_SEARCH_PATH: comercial,public
+      COMERCIAL_BROKER_DRIVER: ${COMERCIAL_BROKER_DRIVER:-log}
+      COMERCIAL_WEBHOOK_SECRETO: ${COMERCIAL_WEBHOOK_SECRETO:-}
+      RABBITMQ_HOST: rabbitmq
+      KEYCLOAK_ISSUER: ${KEYCLOAK_ISSUER:-http://localhost:8080/realms/alojate}
+      KEYCLOAK_JWKS_URL: ${KEYCLOAK_JWKS_URL:-http://keycloak:8080/realms/alojate/protocol/openid-connect/certs}
+    ports:
+      - "8000:8000"
+
+  # Relay del Outbox, vencimientos, conciliacion y liquidaciones (routes/console.php).
+  scheduler:
+    <<: *ms03
+    container_name: ms03-scheduler
+    ports: []
+    healthcheck:
+      disable: true
+    command: ["php", "artisan", "schedule:work"]
+
+  # Consume los eventos de MS-01 y MS-02 (necesita COMERCIAL_BROKER_DRIVER=rabbitmq).
+  consumidor:
+    <<: *ms03
+    container_name: ms03-consumidor
+    ports: []
+    healthcheck:
+      disable: true
+    depends_on:
+      - postgres
+      - rabbitmq
+    command: ["php", "artisan", "mensajeria:consumir"]
+    restart: unless-stopped
+
 volumes:
   ms03_pgdata:

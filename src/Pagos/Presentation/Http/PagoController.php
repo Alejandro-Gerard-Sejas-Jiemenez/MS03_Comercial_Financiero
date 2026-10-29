@@ -21,9 +21,11 @@ use Src\Pagos\Application\UseCase\EmitirComprobante\EmitirComprobanteHandler;
 use Src\Pagos\Domain\CriterioDePagos;
 use Src\Pagos\Domain\EstadoPago;
 use Src\Pagos\Domain\MetodoPago;
+use Src\Pagos\Domain\Pago;
 use Src\Pagos\Domain\TipoComprobante;
 use Src\Shared\Domain\Exception\OperacionNoPermitida;
 use Src\Shared\Presentation\Http\ControladorBase;
+use Src\Shared\Presentation\Http\Presentador;
 
 /** CU-PAG-01, 02, 03, 04, 06 y 10. Controlador delgado: request -> Command -> Handler -> JSON. */
 final class PagoController extends ControladorBase
@@ -102,17 +104,17 @@ final class PagoController extends ControladorBase
             pasarela: $d['pasarela'] ?? null,
         ));
 
-        return $this->responder($pago, 201);
+        return $this->responder($this->conTotal($pago), 201);
     }
 
     public function cobrar(Request $request, string $pagoId): JsonResponse
     {
         $this->exigirDuenoDelPago($request, $pagoId, soloCliente: true);
 
-        return $this->responder(($this->cobrar)(new CobrarPagoCommand(
+        return $this->responder($this->conTotal(($this->cobrar)(new CobrarPagoCommand(
             pagoId: $pagoId,
             idempotencyKey: $request->header('Idempotency-Key'),
-        )));
+        ))));
     }
 
     public function cancelar(Request $request, string $pagoId): JsonResponse
@@ -120,7 +122,7 @@ final class PagoController extends ControladorBase
         $d = $request->validate(['motivo' => 'required|string|max:200']);
         $this->exigirDuenoDelPago($request, $pagoId, soloCliente: true);
 
-        return $this->responder(($this->cancelar)(new CancelarPagoPendienteCommand($pagoId, $d['motivo'])));
+        return $this->responder($this->conTotal(($this->cancelar)(new CancelarPagoPendienteCommand($pagoId, $d['motivo']))));
     }
 
     public function listar(Request $request): JsonResponse
@@ -198,6 +200,20 @@ final class PagoController extends ControladorBase
             nitCliente: $d['nit_cliente'] ?? null,
             razonSocial: $d['razon_social'] ?? null,
         )), 201);
+    }
+
+    /**
+     * El total y lo que recibe el anfitrion se calculan en el dominio, no son
+     * propiedades: se agregan para que quien consume no tenga que sumarlos.
+     *
+     * @return array<string, mixed>
+     */
+    private function conTotal(Pago $pago): array
+    {
+        return array_merge((array) Presentador::aArreglo($pago), [
+            'total' => Presentador::aArreglo($pago->total()),
+            'monto_anfitrion' => Presentador::aArreglo($pago->montoDelAnfitrion()),
+        ]);
     }
 
     /**

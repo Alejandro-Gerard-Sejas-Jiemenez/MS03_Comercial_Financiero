@@ -5,9 +5,9 @@ Laravel 12 / PHP 8.2 / PostgreSQL 16 (docker-compose, puerto 5433). Clean Archit
 ## Estado
 
 - 7 paquetes: `Shared`, `Referencias`, `Monetizacion`, `Acuerdos`, `Promociones`, `Pagos`, `Liquidaciones`. 35 casos de uso, 19 tablas en el esquema `comercial`, 10 migraciones.
-- 121 tests (106 + 15 de integracion que requieren PostgreSQL), 508 aserciones; P1, P2 (REST + JOBs), P4 (RabbitMQ: broker, consumidores con Inbox) y P3 (`openapi.yaml`, se regenera con `php artisan openapi:generar`) hechos. Suite reducida a proposito (antes 248): un test por regla relevante.
+- 124 tests (109 + 15 de integracion que requieren PostgreSQL), 633 aserciones; P1, P2 (REST + JOBs), P4 (RabbitMQ: broker, consumidores con Inbox) y P3 (`openapi.yaml`, se regenera con `php artisan openapi:generar`) hechos. Suite reducida a proposito (antes 248): un test por regla relevante.
 - `app/Providers/ComercialServiceProvider.php` enlaza puertos con implementaciones. Broker hoy = `LogMessageBroker`; pasarela = `PasarelaPagoSimulada`.
-- Falta: P5, suite `Contract`, CI, Dockerfile.
+- P5 hecho (suite `Contract`, CI, Dockerfile) pero sin verificar en GitHub ni con el daemon de Docker. Faltan: probar RabbitMQ/Keycloak/PostgreSQL reales, esquemas de contrato para el resto de eventos, servidor de produccion.
 
 ## Reglas que no se rompen
 

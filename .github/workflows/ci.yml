@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: ms03_comercial
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d ms03_comercial"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo_pgsql, bcmath, mbstring, sockets
+          coverage: none
+
+      - name: Cache de Composer
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+
+      - run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Estilo (pint)
+        run: vendor/bin/pint --test src app config routes database tests
+
+      - name: OpenAPI al dia
+        run: php artisan openapi:generar --check
+
+      - name: Suites sin base de datos (Unit, Application, Architecture, Feature, Contract)
+        run: >
+          vendor/bin/phpunit
+          --testsuite Unit,Application,Architecture,Feature,Contract
+
+      - name: Migraciones contra PostgreSQL 16
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5433
+          DB_DATABASE: ms03_comercial
+          DB_USERNAME: postgres
+          DB_PASSWORD: postgres
+          DB_SEARCH_PATH: comercial,public
+        run: php artisan migrate --force
+
+      - name: Integracion (restricciones reales de PostgreSQL)
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5433
+          DB_DATABASE: ms03_comercial
+          DB_USERNAME: postgres
+          DB_PASSWORD: postgres
+          DB_SEARCH_PATH: comercial,public
+        run: vendor/bin/phpunit --testsuite Integration
+
+  imagen:
+    runs-on: ubuntu-latest
+    needs: pruebas
+    steps:
+      - uses: actions/checkout@v4
+      - name: Construye la imagen
+        run: docker build -t ms03:ci .

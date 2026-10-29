@@ -1,0 +1,8 @@
+{
+  "agregado_tipo": "acuerdo_comercial",
+  "consume": "MS-01 (habilita publicaciones)",
+  "payload": {
+    "acuerdo_id": "uuid", "anfitrion_id": "uuid", "regla_comision_id": "uuid?", "dias_liquidacion": "int",
+    "fecha_inicio": "date", "fecha_fin": "date?", "aprobado_por": "uuid"
+  }
+}
