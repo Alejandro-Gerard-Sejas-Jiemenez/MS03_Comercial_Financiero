@@ -71,6 +71,7 @@ use Src\Pagos\Presentation\Console\EjecutarConciliacionCommand;
 use Src\Pagos\Presentation\Console\ExpirarPagosPendientesCommand;
 use Src\Promociones\Presentation\Console\VencerPromocionesCommand;
 use Src\Shared\Presentation\Auth\AutenticadorDeSolicitud;
+use Src\Shared\Presentation\Console\GenerarOpenApiCommand;
 use Src\Shared\Presentation\Console\PublicarOutboxCommand;
 use Src\Shared\Presentation\Auth\KeycloakJwtAutenticador;
 use Src\Shared\Presentation\Http\Middleware\AutenticarSesion;
@@ -158,6 +159,7 @@ final class ComercialServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 PublicarOutboxCommand::class,
+                GenerarOpenApiCommand::class,
                 VencerPromocionesCommand::class,
                 GenerarLiquidacionesCommand::class,
                 EjecutarConciliacionCommand::class,

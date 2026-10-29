@@ -1,0 +1,3460 @@
+openapi: 3.0.3
+info:
+  title: 'MS-03 Comercial y Financiero'
+  version: 1.0.0
+  description: 'Pagos, reembolsos, promociones, acuerdos comerciales, comisiones y liquidaciones. Los importes viajan en centavos. Las respuestas exitosas vienen envueltas en `{data}`; los errores como `{codigo, mensaje}`.'
+servers:
+  -
+    url: /api/v1
+tags:
+  -
+    name: Acuerdos
+  -
+    name: Liquidaciones
+  -
+    name: Monetizacion
+  -
+    name: Pagos
+  -
+    name: Promociones
+  -
+    name: Shared
+paths:
+  /acuerdos:
+    get:
+      tags:
+        - Acuerdos
+      operationId: acuerdoControllerListar
+      summary: 'Listar — AcuerdoController'
+      description: 'Casos de uso del controlador: CU-ACU-01. Roles permitidos: ANFITRION, ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: estado
+          in: query
+          required: false
+          schema:
+            type: string
+            nullable: true
+        -
+          name: anfitrion_id
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+            nullable: true
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags:
+        - Acuerdos
+      operationId: acuerdoControllerCrear
+      summary: 'Crear — AcuerdoController'
+      description: 'Casos de uso del controlador: CU-ACU-01. Roles permitidos: ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - anfitrion_id
+                - fecha_inicio
+              properties:
+                anfitrion_id:
+                  type: string
+                  format: uuid
+                fecha_inicio:
+                  type: string
+                  format: date-time
+                fecha_fin:
+                  type: string
+                  format: date-time
+                  nullable: true
+                dias_liquidacion:
+                  type: integer
+                  nullable: true
+                regla_comision_id:
+                  type: string
+                  format: uuid
+                  nullable: true
+                condiciones:
+                  type: array
+                  items:
+                    type: string
+                  nullable: true
+      responses:
+        201:
+          description: Creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        409:
+          description: 'Choca con el estado actual del recurso'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/acuerdos/{acuerdoId}':
+    get:
+      tags:
+        - Acuerdos
+      operationId: acuerdoControllerMostrar
+      summary: 'Mostrar — AcuerdoController'
+      description: 'Casos de uso del controlador: CU-ACU-01. Roles permitidos: ANFITRION, ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: acuerdoId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: 'El recurso no existe'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      tags:
+        - Acuerdos
+      operationId: acuerdoControllerActualizar
+      summary: 'Actualizar — AcuerdoController'
+      description: 'Casos de uso del controlador: CU-ACU-01. Roles permitidos: ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: acuerdoId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dias_liquidacion:
+                  type: integer
+                  nullable: true
+                regla_comision_id:
+                  type: string
+                  format: uuid
+                  nullable: true
+                condiciones:
+                  type: array
+                  items:
+                    type: string
+                  nullable: true
+                fecha_fin:
+                  type: string
+                  format: date-time
+                  nullable: true
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: 'El recurso no existe'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        409:
+          description: 'Choca con el estado actual del recurso'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/acuerdos/{acuerdoId}/estado':
+    post:
+      tags:
+        - Acuerdos
+      operationId: acuerdoControllerCambiarEstado
+      summary: 'Cambiar estado — AcuerdoController'
+      description: 'Casos de uso del controlador: CU-ACU-01. Roles permitidos: ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: acuerdoId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - estado
+              properties:
+                estado:
+                  type: string
+                motivo:
+                  type: string
+                  maxLength: 500
+                  nullable: true
+                saga_id:
+                  type: string
+                  format: uuid
+                  nullable: true
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: 'El recurso no existe'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        409:
+          description: 'Choca con el estado actual del recurso'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/anfitriones/{anfitrionId}/acuerdos':
+    get:
+      tags:
+        - Acuerdos
+      operationId: acuerdoControllerHistorial
+      summary: 'Historial — AcuerdoController'
+      description: 'Casos de uso del controlador: CU-ACU-01. Roles permitidos: ANFITRION, ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: anfitrionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: 'El recurso no existe'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/anfitriones/{anfitrionId}/comisiones-por-liquidar':
+    get:
+      tags:
+        - Liquidaciones
+      operationId: liquidacionControllerPorLiquidar
+      summary: 'Por liquidar — LiquidacionController'
+      description: 'Casos de uso del controlador: CU-LIQ-05, 06, 07. Roles permitidos: ANFITRION, ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: anfitrionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        -
+          name: hasta
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+            nullable: true
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: 'El recurso no existe'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/anfitriones/{anfitrionId}/liquidaciones':
+    get:
+      tags:
+        - Liquidaciones
+      operationId: liquidacionControllerHistorial
+      summary: 'Historial — LiquidacionController'
+      description: 'Casos de uso del controlador: CU-LIQ-05, 06, 07. Roles permitidos: ANFITRION, ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: anfitrionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        -
+          name: estado
+          in: query
+          required: false
+          schema:
+            type: string
+            nullable: true
+        -
+          name: limite
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            nullable: true
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: 'El recurso no existe'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/anfitriones/{anfitrionId}/metodos-cobro':
+    get:
+      tags:
+        - Acuerdos
+      operationId: metodoCobroControllerListar
+      summary: 'Listar — MetodoCobroController'
+      description: 'Casos de uso del controlador: CU-ACU-03. Roles permitidos: ANFITRION, ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: anfitrionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: 'El recurso no existe'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags:
+        - Acuerdos
+      operationId: metodoCobroControllerRegistrar
+      summary: 'Registrar — MetodoCobroController'
+      description: 'Casos de uso del controlador: CU-ACU-03. Roles permitidos: ANFITRION, ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: anfitrionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - tipo
+                - titular
+                - numero
+              properties:
+                tipo:
+                  type: string
+                titular:
+                  type: string
+                  maxLength: 150
+                numero:
+                  type: string
+                  maxLength: 50
+                banco:
+                  type: string
+                  maxLength: 100
+                  nullable: true
+                es_principal:
+                  type: boolean
+                  nullable: true
+      responses:
+        201:
+          description: Creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: 'El recurso no existe'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        409:
+          description: 'Choca con el estado actual del recurso'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/anfitriones/{anfitrionId}/saldo':
+    get:
+      tags:
+        - Liquidaciones
+      operationId: liquidacionControllerSaldo
+      summary: 'Saldo — LiquidacionController'
+      description: 'Casos de uso del controlador: CU-LIQ-05, 06, 07. Roles permitidos: ANFITRION, ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: anfitrionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        -
+          name: moneda
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 3
+            minLength: 3
+            nullable: true
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: 'El recurso no existe'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /conciliaciones:
+    post:
+      tags:
+        - Pagos
+      operationId: conciliacionControllerEjecutar
+      summary: 'Ejecutar — ConciliacionController'
+      description: 'Casos de uso del controlador: CU-PAG-11 y 12. Roles permitidos: ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fecha_corte:
+                  type: string
+                  format: date-time
+                  nullable: true
+                moneda:
+                  type: string
+                  maxLength: 3
+                  minLength: 3
+                  nullable: true
+      responses:
+        201:
+          description: Creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        409:
+          description: 'Choca con el estado actual del recurso'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/conciliaciones/{conciliacionId}/revisiones':
+    post:
+      tags:
+        - Pagos
+      operationId: conciliacionControllerRevisar
+      summary: 'Revisar — ConciliacionController'
+      description: 'Casos de uso del controlador: CU-PAG-11 y 12. Roles permitidos: ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: conciliacionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - referencia_pasarela
+                - observacion
+              properties:
+                referencia_pasarela:
+                  type: string
+                observacion:
+                  type: string
+                  maxLength: 500
+                transaccion_id:
+                  type: string
+                  nullable: true
+                cerrar:
+                  type: boolean
+                  nullable: true
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: 'El recurso no existe'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        409:
+          description: 'Choca con el estado actual del recurso'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /desglose-comercial:
+    post:
+      tags:
+        - Monetizacion
+      operationId: monetizacionControllerCalcularDesglose
+      summary: 'Calcular desglose — MonetizacionController'
+      description: 'Casos de uso del controlador: CU-MON-01. Roles permitidos: CLIENTE, ANFITRION, ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - subtotal_centavos
+              properties:
+                subtotal_centavos:
+                  type: integer
+                  minimum: 0
+                descuento_centavos:
+                  type: integer
+                  minimum: 0
+                  nullable: true
+                moneda:
+                  type: string
+                  maxLength: 3
+                  minLength: 3
+                  nullable: true
+                financiamiento:
+                  type: string
+                  nullable: true
+                categoria_alojamiento:
+                  type: string
+                  nullable: true
+                nivel_anfitrion:
+                  type: string
+                  nullable: true
+                regla_comision_negociada_id:
+                  type: string
+                  format: uuid
+                  nullable: true
+                fecha:
+                  type: string
+                  format: date-time
+                  nullable: true
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        409:
+          description: 'Choca con el estado actual del recurso'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/liquidaciones/{liquidacionId}':
+    get:
+      tags:
+        - Liquidaciones
+      operationId: liquidacionControllerDetalle
+      summary: 'Detalle — LiquidacionController'
+      description: 'Casos de uso del controlador: CU-LIQ-05, 06, 07. Roles permitidos: ANFITRION, ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: liquidacionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: 'El recurso no existe'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/liquidaciones/{liquidacionId}/aprobacion':
+    post:
+      tags:
+        - Liquidaciones
+      operationId: liquidacionControllerAprobar
+      summary: 'Aprobar — LiquidacionController'
+      description: 'Casos de uso del controlador: CU-LIQ-05, 06, 07. Roles permitidos: ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: liquidacionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: 'El recurso no existe'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        409:
+          description: 'Choca con el estado actual del recurso'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/liquidaciones/{liquidacionId}/pago':
+    post:
+      tags:
+        - Liquidaciones
+      operationId: liquidacionControllerPagar
+      summary: 'Pagar — LiquidacionController'
+      description: 'Casos de uso del controlador: CU-LIQ-05, 06, 07. Roles permitidos: ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: liquidacionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - referencia_transferencia
+              properties:
+                referencia_transferencia:
+                  type: string
+                  maxLength: 100
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: 'El recurso no existe'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        409:
+          description: 'Choca con el estado actual del recurso'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/liquidaciones/{liquidacionId}/rechazo':
+    post:
+      tags:
+        - Liquidaciones
+      operationId: liquidacionControllerRechazar
+      summary: 'Rechazar — LiquidacionController'
+      description: 'Casos de uso del controlador: CU-LIQ-05, 06, 07. Roles permitidos: ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: liquidacionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - motivo
+              properties:
+                motivo:
+                  type: string
+                  maxLength: 500
+                anular:
+                  type: boolean
+                  nullable: true
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: 'El recurso no existe'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        409:
+          description: 'Choca con el estado actual del recurso'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/metodos-cobro/{metodoId}':
+    get:
+      tags:
+        - Acuerdos
+      operationId: metodoCobroControllerMostrar
+      summary: 'Mostrar — MetodoCobroController'
+      description: 'Casos de uso del controlador: CU-ACU-03. Roles permitidos: ANFITRION, ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: metodoId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: 'El recurso no existe'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      tags:
+        - Acuerdos
+      operationId: metodoCobroControllerActualizar
+      summary: 'Actualizar — MetodoCobroController'
+      description: 'Casos de uso del controlador: CU-ACU-03. Roles permitidos: ANFITRION, ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: metodoId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                titular:
+                  type: string
+                  maxLength: 150
+                  nullable: true
+                banco:
+                  type: string
+                  maxLength: 100
+                  nullable: true
+                numero:
+                  type: string
+                  maxLength: 50
+                  nullable: true
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: 'El recurso no existe'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        409:
+          description: 'Choca con el estado actual del recurso'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/metodos-cobro/{metodoId}/principal':
+    post:
+      tags:
+        - Acuerdos
+      operationId: metodoCobroControllerDefinirPrincipal
+      summary: 'Definir principal — MetodoCobroController'
+      description: 'Casos de uso del controlador: CU-ACU-03. Roles permitidos: ANFITRION, ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: metodoId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: 'El recurso no existe'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        409:
+          description: 'Choca con el estado actual del recurso'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/metodos-cobro/{metodoId}/verificacion':
+    post:
+      tags:
+        - Acuerdos
+      operationId: metodoCobroControllerVerificar
+      summary: 'Verificar — MetodoCobroController'
+      description: 'Casos de uso del controlador: CU-ACU-03. Roles permitidos: ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: metodoId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: 'El recurso no existe'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        409:
+          description: 'Choca con el estado actual del recurso'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /pagos:
+    get:
+      tags:
+        - Pagos
+      operationId: pagoControllerListar
+      summary: 'Listar — PagoController'
+      description: 'Casos de uso del controlador: CU-PAG-01, 02, 03, 04, 06 y 10. Roles permitidos: CLIENTE, ANFITRION, ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: cliente_id
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+            nullable: true
+        -
+          name: anfitrion_id
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+            nullable: true
+        -
+          name: reserva_id
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+            nullable: true
+        -
+          name: estado
+          in: query
+          required: false
+          schema:
+            type: string
+            nullable: true
+        -
+          name: desde
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+            nullable: true
+        -
+          name: hasta
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+            nullable: true
+        -
+          name: limite
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            nullable: true
+        -
+          name: como
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - cliente
+              - anfitrion
+            nullable: true
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags:
+        - Pagos
+      operationId: pagoControllerCrear
+      summary: 'Crear — PagoController'
+      description: 'Casos de uso del controlador: CU-PAG-01, 02, 03, 04, 06 y 10. Roles permitidos: CLIENTE, ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            maxLength: 100
+          description: 'Misma clave y mismo cuerpo devuelven la primera respuesta; con otro cuerpo, 422.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - reserva_id
+                - anfitrion_id
+                - subtotal_centavos
+                - cargo_servicio_centavos
+                - metodo
+              properties:
+                reserva_id:
+                  type: string
+                  format: uuid
+                cliente_id:
+                  type: string
+                  format: uuid
+                  nullable: true
+                anfitrion_id:
+                  type: string
+                  format: uuid
+                subtotal_centavos:
+                  type: integer
+                  minimum: 0
+                cargo_servicio_centavos:
+                  type: integer
+                  minimum: 0
+                descuento_centavos:
+                  type: integer
+                  minimum: 0
+                  nullable: true
+                metodo:
+                  type: string
+                moneda:
+                  type: string
+                  maxLength: 3
+                  minLength: 3
+                  nullable: true
+                saga_id:
+                  type: string
+                  format: uuid
+                  nullable: true
+                promocion_id:
+                  type: string
+                  format: uuid
+                  nullable: true
+                pasarela:
+                  type: string
+                  nullable: true
+      responses:
+        201:
+          description: Creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        409:
+          description: 'Choca con el estado actual del recurso'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /pagos/cotizaciones:
+    post:
+      tags:
+        - Pagos
+      operationId: pagoControllerCotizar
+      summary: 'Cotizar — PagoController'
+      description: 'Casos de uso del controlador: CU-PAG-01, 02, 03, 04, 06 y 10. Roles permitidos: CLIENTE, ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - anfitrion_id
+                - subtotal_centavos
+                - noches
+              properties:
+                anfitrion_id:
+                  type: string
+                  format: uuid
+                subtotal_centavos:
+                  type: integer
+                  minimum: 0
+                noches:
+                  type: integer
+                  minimum: 1
+                alojamiento_id:
+                  type: string
+                  nullable: true
+                categoria_alojamiento:
+                  type: string
+                  nullable: true
+                nivel_anfitrion:
+                  type: string
+                  nullable: true
+                codigo_cupon:
+                  type: string
+                  nullable: true
+                promocion_id:
+                  type: string
+                  format: uuid
+                  nullable: true
+                moneda:
+                  type: string
+                  maxLength: 3
+                  minLength: 3
+                  nullable: true
+                fecha:
+                  type: string
+                  format: date-time
+                  nullable: true
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        409:
+          description: 'Choca con el estado actual del recurso'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /pagos/notificaciones-pasarela:
+    post:
+      tags:
+        - Pagos
+      operationId: notificacionPasarelaController__invoke
+      summary: '__invoke — NotificacionPasarelaController'
+      description: 'Casos de uso del controlador: CU-PAG-05.'
+      security:
+        -
+          webhookSecret: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - pago_id
+                - referencia_pasarela
+                - exitosa
+              properties:
+                pago_id:
+                  type: string
+                  format: uuid
+                referencia_pasarela:
+                  type: string
+                exitosa:
+                  type: boolean
+                pasarela:
+                  type: string
+                  nullable: true
+                motivo:
+                  type: string
+                  nullable: true
+                monto_centavos:
+                  type: integer
+                  minimum: 0
+                  nullable: true
+                moneda:
+                  type: string
+                  maxLength: 3
+                  minLength: 3
+                  nullable: true
+                tipo:
+                  type: string
+                  nullable: true
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: 'El recurso no existe'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        409:
+          description: 'Choca con el estado actual del recurso'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/pagos/{pagoId}':
+    get:
+      tags:
+        - Pagos
+      operationId: pagoControllerMostrar
+      summary: 'Mostrar — PagoController'
+      description: 'Casos de uso del controlador: CU-PAG-01, 02, 03, 04, 06 y 10. Roles permitidos: CLIENTE, ANFITRION, ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: pagoId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: 'El recurso no existe'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/pagos/{pagoId}/cancelacion':
+    post:
+      tags:
+        - Pagos
+      operationId: pagoControllerCancelar
+      summary: 'Cancelar — PagoController'
+      description: 'Casos de uso del controlador: CU-PAG-01, 02, 03, 04, 06 y 10. Roles permitidos: CLIENTE, ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: pagoId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - motivo
+              properties:
+                motivo:
+                  type: string
+                  maxLength: 200
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: 'El recurso no existe'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        409:
+          description: 'Choca con el estado actual del recurso'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/pagos/{pagoId}/cobro':
+    post:
+      tags:
+        - Pagos
+      operationId: pagoControllerCobrar
+      summary: 'Cobrar — PagoController'
+      description: 'Casos de uso del controlador: CU-PAG-01, 02, 03, 04, 06 y 10. Roles permitidos: CLIENTE, ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: pagoId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        -
+          name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            maxLength: 100
+          description: 'Misma clave y mismo cuerpo devuelven la primera respuesta; con otro cuerpo, 422.'
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: 'El recurso no existe'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        409:
+          description: 'Choca con el estado actual del recurso'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/pagos/{pagoId}/comprobante':
+    get:
+      tags:
+        - Pagos
+      operationId: pagoControllerComprobante
+      summary: 'Comprobante — PagoController'
+      description: 'Casos de uso del controlador: CU-PAG-01, 02, 03, 04, 06 y 10. Roles permitidos: CLIENTE, ANFITRION, ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: pagoId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: 'El recurso no existe'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags:
+        - Pagos
+      operationId: pagoControllerEmitirComprobante
+      summary: 'Emitir comprobante — PagoController'
+      description: 'Casos de uso del controlador: CU-PAG-01, 02, 03, 04, 06 y 10. Roles permitidos: CLIENTE, ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: pagoId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tipo:
+                  type: string
+                  nullable: true
+                nit_cliente:
+                  type: string
+                  maxLength: 20
+                  nullable: true
+                razon_social:
+                  type: string
+                  maxLength: 150
+                  nullable: true
+      responses:
+        201:
+          description: Creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: 'El recurso no existe'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        409:
+          description: 'Choca con el estado actual del recurso'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/pagos/{pagoId}/reembolsos':
+    get:
+      tags:
+        - Pagos
+      operationId: pagoControllerReembolsos
+      summary: 'Reembolsos — PagoController'
+      description: 'Casos de uso del controlador: CU-PAG-01, 02, 03, 04, 06 y 10. Roles permitidos: CLIENTE, ANFITRION, ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: pagoId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: 'El recurso no existe'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/pagos/{pagoId}/transacciones':
+    get:
+      tags:
+        - Pagos
+      operationId: pagoControllerTransacciones
+      summary: 'Transacciones — PagoController'
+      description: 'Casos de uso del controlador: CU-PAG-01, 02, 03, 04, 06 y 10. Roles permitidos: CLIENTE, ANFITRION, ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: pagoId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: 'El recurso no existe'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /promociones:
+    get:
+      tags:
+        - Promociones
+      operationId: promocionControllerListar
+      summary: 'Listar — PromocionController'
+      description: 'Casos de uso del controlador: CU-PRO-01. Roles permitidos: ANFITRION, ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: anfitrion_id
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+            nullable: true
+        -
+          name: estado
+          in: query
+          required: false
+          schema:
+            type: string
+            nullable: true
+        -
+          name: tipo
+          in: query
+          required: false
+          schema:
+            type: string
+            nullable: true
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags:
+        - Promociones
+      operationId: promocionControllerCrear
+      summary: 'Crear — PromocionController'
+      description: 'Casos de uso del controlador: CU-PRO-01. Roles permitidos: ANFITRION, ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - nombre
+                - tipo
+                - tipo_descuento
+                - valor
+                - vigente_desde
+                - vigente_hasta
+              properties:
+                nombre:
+                  type: string
+                  maxLength: 100
+                tipo:
+                  type: string
+                tipo_descuento:
+                  type: string
+                valor:
+                  type: number
+                vigente_desde:
+                  type: string
+                  format: date-time
+                vigente_hasta:
+                  type: string
+                  format: date-time
+                codigo:
+                  type: string
+                  maxLength: 30
+                  nullable: true
+                anfitrion_id:
+                  type: string
+                  format: uuid
+                  nullable: true
+                financiada_por:
+                  type: string
+                  nullable: true
+                min_noches:
+                  type: integer
+                  minimum: 1
+                  nullable: true
+                max_usos:
+                  type: integer
+                  minimum: 1
+                  nullable: true
+                moneda:
+                  type: string
+                  maxLength: 3
+                  minLength: 3
+                  nullable: true
+                alojamientos:
+                  type: array
+                  items:
+                    type: string
+                  nullable: true
+      responses:
+        201:
+          description: Creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        409:
+          description: 'Choca con el estado actual del recurso'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /promociones/descuento:
+    post:
+      tags:
+        - Promociones
+      operationId: promocionControllerDescuento
+      summary: 'Descuento — PromocionController'
+      description: 'Casos de uso del controlador: CU-PRO-01. Roles permitidos: CLIENTE, ANFITRION, ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - subtotal_centavos
+                - noches
+              properties:
+                subtotal_centavos:
+                  type: integer
+                  minimum: 0
+                noches:
+                  type: integer
+                  minimum: 1
+                moneda:
+                  type: string
+                  maxLength: 3
+                  minLength: 3
+                  nullable: true
+                codigo_cupon:
+                  type: string
+                  nullable: true
+                promocion_id:
+                  type: string
+                  format: uuid
+                  nullable: true
+                alojamiento_id:
+                  type: string
+                  nullable: true
+                anfitrion_id:
+                  type: string
+                  format: uuid
+                  nullable: true
+                fecha:
+                  type: string
+                  format: date-time
+                  nullable: true
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        409:
+          description: 'Choca con el estado actual del recurso'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/promociones/{promocionId}':
+    get:
+      tags:
+        - Promociones
+      operationId: promocionControllerMostrar
+      summary: 'Mostrar — PromocionController'
+      description: 'Casos de uso del controlador: CU-PRO-01. Roles permitidos: ANFITRION, ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: promocionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: 'El recurso no existe'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      tags:
+        - Promociones
+      operationId: promocionControllerActualizar
+      summary: 'Actualizar — PromocionController'
+      description: 'Casos de uso del controlador: CU-PRO-01. Roles permitidos: ANFITRION, ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: promocionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre:
+                  type: string
+                  maxLength: 100
+                  nullable: true
+                valor:
+                  type: number
+                  nullable: true
+                vigente_desde:
+                  type: string
+                  format: date-time
+                  nullable: true
+                vigente_hasta:
+                  type: string
+                  format: date-time
+                  nullable: true
+                min_noches:
+                  type: integer
+                  minimum: 1
+                  nullable: true
+                max_usos:
+                  type: integer
+                  minimum: 1
+                  nullable: true
+                financiada_por:
+                  type: string
+                  nullable: true
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: 'El recurso no existe'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        409:
+          description: 'Choca con el estado actual del recurso'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/promociones/{promocionId}/activacion':
+    post:
+      tags:
+        - Promociones
+      operationId: promocionControllerActivar
+      summary: 'Activar — PromocionController'
+      description: 'Casos de uso del controlador: CU-PRO-01. Roles permitidos: ANFITRION, ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: promocionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: 'El recurso no existe'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        409:
+          description: 'Choca con el estado actual del recurso'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/promociones/{promocionId}/alojamientos':
+    put:
+      tags:
+        - Promociones
+      operationId: promocionControllerAsignarAlojamientos
+      summary: 'Asignar alojamientos — PromocionController'
+      description: 'Casos de uso del controlador: CU-PRO-01. Roles permitidos: ANFITRION, ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: promocionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - alojamientos
+              properties:
+                alojamientos:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: 'El recurso no existe'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        409:
+          description: 'Choca con el estado actual del recurso'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/promociones/{promocionId}/cancelacion':
+    post:
+      tags:
+        - Promociones
+      operationId: promocionControllerCancelar
+      summary: 'Cancelar — PromocionController'
+      description: 'Casos de uso del controlador: CU-PRO-01. Roles permitidos: ANFITRION, ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: promocionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: 'El recurso no existe'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        409:
+          description: 'Choca con el estado actual del recurso'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/promociones/{promocionId}/pausa':
+    post:
+      tags:
+        - Promociones
+      operationId: promocionControllerPausar
+      summary: 'Pausar — PromocionController'
+      description: 'Casos de uso del controlador: CU-PRO-01. Roles permitidos: ANFITRION, ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: promocionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: 'El recurso no existe'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        409:
+          description: 'Choca con el estado actual del recurso'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /reembolsos:
+    post:
+      tags:
+        - Pagos
+      operationId: reembolsoControllerSolicitar
+      summary: 'Solicitar — ReembolsoController'
+      description: 'Casos de uso del controlador: CU-PAG-07, 08 y 09. Roles permitidos: CLIENTE, ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - reserva_id
+              properties:
+                reserva_id:
+                  type: string
+                  format: uuid
+                motivo:
+                  type: string
+                  nullable: true
+                fecha_cancelacion:
+                  type: string
+                  format: date-time
+                  nullable: true
+                monto_forzado_centavos:
+                  type: integer
+                  minimum: 1
+                  nullable: true
+                moneda:
+                  type: string
+                  maxLength: 3
+                  minLength: 3
+                  nullable: true
+                detalle:
+                  type: string
+                  maxLength: 500
+                  nullable: true
+      responses:
+        201:
+          description: Creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        409:
+          description: 'Choca con el estado actual del recurso'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/reembolsos/{reembolsoId}/procesamiento':
+    post:
+      tags:
+        - Pagos
+      operationId: reembolsoControllerProcesar
+      summary: 'Procesar — ReembolsoController'
+      description: 'Casos de uso del controlador: CU-PAG-07, 08 y 09. Roles permitidos: ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: reembolsoId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        -
+          name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            maxLength: 100
+          description: 'Misma clave y mismo cuerpo devuelven la primera respuesta; con otro cuerpo, 422.'
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: 'El recurso no existe'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        409:
+          description: 'Choca con el estado actual del recurso'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/reembolsos/{reembolsoId}/revision':
+    post:
+      tags:
+        - Pagos
+      operationId: reembolsoControllerRevisar
+      summary: 'Revisar — ReembolsoController'
+      description: 'Casos de uso del controlador: CU-PAG-07, 08 y 09. Roles permitidos: ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: reembolsoId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - aprobado
+              properties:
+                aprobado:
+                  type: boolean
+                detalle:
+                  type: string
+                  maxLength: 500
+                  nullable: true
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: 'El recurso no existe'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        409:
+          description: 'Choca con el estado actual del recurso'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /reglas-monetizacion:
+    get:
+      tags:
+        - Monetizacion
+      operationId: monetizacionControllerListar
+      summary: 'Listar — MonetizacionController'
+      description: 'Casos de uso del controlador: CU-MON-01. Roles permitidos: ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: concepto
+          in: query
+          required: false
+          schema:
+            type: string
+            nullable: true
+        -
+          name: estado
+          in: query
+          required: false
+          schema:
+            type: string
+            nullable: true
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags:
+        - Monetizacion
+      operationId: monetizacionControllerCrear
+      summary: 'Crear — MonetizacionController'
+      description: 'Casos de uso del controlador: CU-MON-01. Roles permitidos: ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - nombre
+                - concepto
+                - tipo_calculo
+                - vigente_desde
+              properties:
+                nombre:
+                  type: string
+                  maxLength: 100
+                concepto:
+                  type: string
+                tipo_calculo:
+                  type: string
+                vigente_desde:
+                  type: string
+                  format: date-time
+                vigente_hasta:
+                  type: string
+                  format: date-time
+                  nullable: true
+                porcentaje:
+                  type: number
+                  nullable: true
+                monto_fijo_centavos:
+                  type: integer
+                  minimum: 0
+                  nullable: true
+                moneda:
+                  type: string
+                  maxLength: 3
+                  minLength: 3
+                  nullable: true
+                categoria_alojamiento:
+                  type: string
+                  nullable: true
+                nivel_anfitrion:
+                  type: string
+                  nullable: true
+      responses:
+        201:
+          description: Creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        409:
+          description: 'Choca con el estado actual del recurso'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /reglas-monetizacion/vigentes:
+    get:
+      tags:
+        - Monetizacion
+      operationId: monetizacionControllerVigentes
+      summary: 'Vigentes — MonetizacionController'
+      description: 'Casos de uso del controlador: CU-MON-01. Roles permitidos: ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: concepto
+          in: query
+          required: true
+          schema:
+            type: string
+        -
+          name: fecha
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+            nullable: true
+        -
+          name: categoria_alojamiento
+          in: query
+          required: false
+          schema:
+            type: string
+            nullable: true
+        -
+          name: nivel_anfitrion
+          in: query
+          required: false
+          schema:
+            type: string
+            nullable: true
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/reglas-monetizacion/{reglaId}':
+    get:
+      tags:
+        - Monetizacion
+      operationId: monetizacionControllerMostrar
+      summary: 'Mostrar — MonetizacionController'
+      description: 'Casos de uso del controlador: CU-MON-01. Roles permitidos: ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: reglaId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: 'El recurso no existe'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      tags:
+        - Monetizacion
+      operationId: monetizacionControllerActualizar
+      summary: 'Actualizar — MonetizacionController'
+      description: 'Casos de uso del controlador: CU-MON-01. Roles permitidos: ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: reglaId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre:
+                  type: string
+                  maxLength: 100
+                  nullable: true
+                porcentaje:
+                  type: number
+                  nullable: true
+                monto_fijo_centavos:
+                  type: integer
+                  minimum: 0
+                  nullable: true
+                vigente_hasta:
+                  type: string
+                  format: date-time
+                  nullable: true
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: 'El recurso no existe'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        409:
+          description: 'Choca con el estado actual del recurso'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/reglas-monetizacion/{reglaId}/desactivacion':
+    post:
+      tags:
+        - Monetizacion
+      operationId: monetizacionControllerDesactivar
+      summary: 'Desactivar — MonetizacionController'
+      description: 'Casos de uso del controlador: CU-MON-01. Roles permitidos: ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: reglaId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: 'El recurso no existe'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        409:
+          description: 'Choca con el estado actual del recurso'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /reportes/ingresos:
+    get:
+      tags:
+        - Liquidaciones
+      operationId: liquidacionControllerReporteIngresos
+      summary: 'Reporte ingresos — LiquidacionController'
+      description: 'Casos de uso del controlador: CU-LIQ-05, 06, 07. Roles permitidos: ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /reportes/ingresos-por-categoria:
+    get:
+      tags:
+        - Liquidaciones
+      operationId: liquidacionControllerReportePorCategoria
+      summary: 'Reporte por categoria — LiquidacionController'
+      description: 'Casos de uso del controlador: CU-LIQ-05, 06, 07. Roles permitidos: ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /salud:
+    get:
+      tags:
+        - Shared
+      operationId: saludController__invoke
+      summary: '__invoke — SaludController'
+      security: []
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: 'JWT emitido por Keycloak. Roles: ADMIN, ANFITRION, CLIENTE.'
+    webhookSecret:
+      type: apiKey
+      in: header
+      name: X-Webhook-Secret
+      description: 'Secreto compartido con la pasarela de pagos.'
+  schemas:
+    Error:
+      type: object
+      required:
+        - codigo
+        - mensaje
+      properties:
+        codigo:
+          type: string
+          example: regla_de_negocio
+        mensaje:
+          type: string
+    Respuesta:
+      type: object
+      properties:
+        data:
+          nullable: true
+          description: 'El recurso o la lista pedida.'
