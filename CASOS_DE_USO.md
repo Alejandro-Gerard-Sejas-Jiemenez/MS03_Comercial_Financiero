@@ -641,9 +641,9 @@ Los nombres de eventos y endpoints son la propuesta del documento de arquitectur
 
 La base de Presentation (P1) existe: JWT de Keycloak, idempotencia, errores y `/api/v1/salud`. Falta, por paquete:
 
-- `Presentation/Http`: controladores, rutas, Form Requests y Resources para los disparadores `REST`, más el middleware que valida el JWT de Keycloak y autoriza por rol (`ADMIN`, `ANFITRION`, `CLIENTE`).
+- ~~`Presentation/Http`~~ **Hecho (P2)**: 54 rutas bajo `/api/v1` en `src/<Paquete>/Presentation/Http/routes.php`; JWT de Keycloak, roles `ADMIN`/`ANFITRION`/`CLIENTE`, `Idempotency-Key` en pago, cobro y reembolso. Los casos EVT (`RegistrarComision`, `RevertirComision`, `MarcarComisionesLiquidables`, `RetenerLiquidacionesDeAnfitrion`, `RegistrarUsoDePromocion`, `SincronizarAnfitrion`, `SincronizarReserva`) no tienen ruta REST a proposito.
 - `Presentation/Messaging`: consumidores de RabbitMQ para los disparadores `EVT`, que antes de procesar deben descartar los mensajes repetidos con el `InboxRegistry`.
-- Comandos de Artisan y entradas del Scheduler para los disparadores `JOB` (`outbox:publish`, vencer promociones, generar liquidaciones, conciliación diaria, expirar pagos pendientes).
+- ~~Comandos de Artisan y Scheduler~~ **Hecho (P2)**: `outbox:publicar`, `promociones:vencer`, `pagos:expirar-pendientes`, `conciliacion:ejecutar`, `liquidaciones:generar` (ver `routes/console.php`).
 
 Los puertos que esa capa usará ya están definidos y enlazados en `app/Providers/ComercialServiceProvider.php`, así que agregarla es escribir adaptadores delgados, sin tocar ningún caso de uso.
 

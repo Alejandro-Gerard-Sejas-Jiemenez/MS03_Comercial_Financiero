@@ -1,0 +1,59 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Src\Pagos\Presentation\Http;
+
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Src\Pagos\Application\UseCase\RecibirNotificacionPasarela\RecibirNotificacionPasarelaCommand;
+use Src\Pagos\Application\UseCase\RecibirNotificacionPasarela\RecibirNotificacionPasarelaHandler;
+use Src\Pagos\Domain\TipoTransaccion;
+use Src\Shared\Domain\Exception\OperacionNoPermitida;
+use Src\Shared\Domain\Money;
+use Src\Shared\Presentation\Http\ControladorBase;
+
+/**
+ * CU-PAG-05: webhook de la pasarela. No lleva JWT (la pasarela no es un
+ * usuario): se autentica con un secreto compartido en `X-Webhook-Secret`.
+ * Sin secreto configurado se rechaza todo.
+ */
+final class NotificacionPasarelaController extends ControladorBase
+{
+    public function __construct(private readonly RecibirNotificacionPasarelaHandler $recibir) {}
+
+    public function __invoke(Request $request): JsonResponse
+    {
+        $esperado = (string) config('comercial.pasarela.webhook_secreto');
+        $recibido = (string) $request->header('X-Webhook-Secret');
+        if ($esperado === '' || ! hash_equals($esperado, $recibido)) {
+            throw new OperacionNoPermitida('Notificacion no autenticada');
+        }
+
+        $d = $request->validate([
+            'pago_id' => 'required|uuid',
+            'referencia_pasarela' => 'required|string',
+            'exitosa' => 'required|boolean',
+            'pasarela' => 'nullable|string',
+            'motivo' => 'nullable|string',
+            'monto_centavos' => 'nullable|integer|min:0',
+            'moneda' => 'nullable|string|size:3',
+            'tipo' => 'nullable|string',
+        ]);
+
+        $resultado = ($this->recibir)(new RecibirNotificacionPasarelaCommand(
+            pagoId: $d['pago_id'],
+            referenciaPasarela: $d['referencia_pasarela'],
+            exitosa: (bool) $d['exitosa'],
+            pasarela: $d['pasarela'] ?? null,
+            motivo: $d['motivo'] ?? null,
+            montoNotificado: isset($d['monto_centavos'])
+                ? Money::deCentavos($d['monto_centavos'], $d['moneda'] ?? 'BOB')
+                : null,
+            tipo: $this->enum(TipoTransaccion::class, $d['tipo'] ?? null),
+            payload: $request->all(),
+        ));
+
+        return $this->responder($resultado);
+    }
+}

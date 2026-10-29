@@ -66,7 +66,12 @@ use Src\Shared\Infrastructure\Persistence\EloquentOutboxRepository;
 use Src\Shared\Infrastructure\Persistence\EloquentTransactionManager;
 use Src\Shared\Infrastructure\System\LaravelUuidGenerator;
 use Src\Shared\Infrastructure\System\SystemClock;
+use Src\Liquidaciones\Presentation\Console\GenerarLiquidacionesCommand;
+use Src\Pagos\Presentation\Console\EjecutarConciliacionCommand;
+use Src\Pagos\Presentation\Console\ExpirarPagosPendientesCommand;
+use Src\Promociones\Presentation\Console\VencerPromocionesCommand;
 use Src\Shared\Presentation\Auth\AutenticadorDeSolicitud;
+use Src\Shared\Presentation\Console\PublicarOutboxCommand;
 use Src\Shared\Presentation\Auth\KeycloakJwtAutenticador;
 use Src\Shared\Presentation\Http\Middleware\AutenticarSesion;
 use Src\Shared\Presentation\Http\Middleware\IdempotenciaMiddleware;
@@ -150,6 +155,16 @@ final class ComercialServiceProvider extends ServiceProvider
 
     public function boot(Router $router): void
     {
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                PublicarOutboxCommand::class,
+                VencerPromocionesCommand::class,
+                GenerarLiquidacionesCommand::class,
+                EjecutarConciliacionCommand::class,
+                ExpirarPagosPendientesCommand::class,
+            ]);
+        }
+
         $router->aliasMiddleware('sesion', AutenticarSesion::class);
         $router->aliasMiddleware('rol', RequiereRol::class);
         $router->aliasMiddleware('idempotente', IdempotenciaMiddleware::class);

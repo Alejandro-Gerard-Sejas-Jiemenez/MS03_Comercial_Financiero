@@ -19,6 +19,8 @@ return [
         'url' => env('COMERCIAL_PASARELA_URL'),
         'llave' => env('COMERCIAL_PASARELA_LLAVE'),
         'timeout' => (int) env('COMERCIAL_PASARELA_TIMEOUT', 15),
+        // Secreto compartido del webhook (CU-PAG-05). Vacio = se rechaza todo.
+        'webhook_secreto' => env('COMERCIAL_WEBHOOK_SECRETO', ''),
     ],
 
     'outbox' => [

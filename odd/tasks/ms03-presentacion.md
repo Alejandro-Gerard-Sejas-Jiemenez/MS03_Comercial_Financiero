@@ -20,7 +20,7 @@ Rama: main (crear rama de feature antes del primer commit) · Entrega: ask-on-ri
 | T2 | S2 | inline | hecho | migracion `2026_10_29_000011` (`idempotencia_http`, PK clave+ruta); ejercitada en sqlite por IdempotenciaTest. No corrida contra PostgreSQL |
 | T3 | S3,S4 | inline | hecho | `KeycloakJwtAutenticador` + puerto + `Sesion`; firebase/php-jwt; config `keycloak`; Keycloak en docker-compose. 4 tests |
 | T4 | S4,S5 | inline | hecho | middleware `sesion`/`rol`/`idempotente`, `ManejadorDeExcepciones`, `GET /api/v1/salud`, cableado en provider y bootstrap. 112 tests, 405 aserciones, 0 fallos |
-| T5 | S5 | inline | pendiente | P2 REST por paquete |
+| T5 | S5 | inline | hecho | P2: 54 rutas REST (Pagos 16 con el webhook, Promociones 9, Acuerdos 12, Monetizacion 7, Liquidaciones 9, salud 1), `Presentador` reflexivo (oculta `*cifrado*` y `eventos`), `ControladorBase`, 5 comandos Artisan + Scheduler. 117 tests (+5 Feature con repos en memoria), 489 aserciones |
 | T6 | S5 | inline | pendiente | P3 OpenAPI |
 | T7 | S4 | inline | pendiente | P4 mensajeria |
 | T8 | S6 | inline | pendiente | P5 cierre |
@@ -35,3 +35,5 @@ Justificacion de tocar Domain (regla 3): subclases de `DomainException` son retr
 **L3 — 2026-10-29:** el usuario pidio reducir los tests a menos de la mitad. 248 -> 104 tests (363 aserciones), verde; se borraron 111 metodos redundantes y los 35 casos del contenedor se colapsaron en 2 tests. Tambien se elimino `test_no_hay_capa_de_presentacion_todavia`, que contradice P1. Baseline nuevo: 104.
 
 **L4 — 2026-10-29, P1 ejecutado de un saque por indicacion del usuario.** Tests nuevos: 8 (104 -> 112). `pint` se corrio sin querer sobre todo el proyecto; se revirtio el formato en los archivos que no tenian otro cambio, quedan ajustes de estilo menores en archivos ya tocados. Pendiente: idempotencia no verificada en PostgreSQL real; Keycloak no levantado (realm/cliente/roles por crear a mano); sin commit.
+
+**L5 — 2026-10-29, P2 ejecutado en la rama `feat/p2-rest`.** Decisiones mias a revisar: (a) el webhook de la pasarela se autentica con `X-Webhook-Secret` (config `COMERCIAL_WEBHOOK_SECRETO`, vacio = rechaza todo); (b) un no-ADMIN solo ve/toca lo suyo (cliente o anfitrion del pago, dueno de promocion/metodo/liquidacion); (c) `monto_forzado` de un reembolso solo lo puede ADMIN; (d) el ADMIN no esta limitado por dueno. Pendiente: endpoints EVT van por mensajeria (P4); las rutas no se probaron contra PostgreSQL real.
