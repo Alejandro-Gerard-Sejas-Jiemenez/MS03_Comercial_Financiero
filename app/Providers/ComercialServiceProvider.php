@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use Illuminate\Routing\Router;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\ServiceProvider;
 use Src\Acuerdos\Application\Port\AcuerdoComercialQuery;
 use Src\Acuerdos\Application\Port\CifradorDeDatos;
@@ -63,6 +66,11 @@ use Src\Shared\Infrastructure\Persistence\EloquentOutboxRepository;
 use Src\Shared\Infrastructure\Persistence\EloquentTransactionManager;
 use Src\Shared\Infrastructure\System\LaravelUuidGenerator;
 use Src\Shared\Infrastructure\System\SystemClock;
+use Src\Shared\Presentation\Auth\AutenticadorDeSolicitud;
+use Src\Shared\Presentation\Auth\KeycloakJwtAutenticador;
+use Src\Shared\Presentation\Http\Middleware\AutenticarSesion;
+use Src\Shared\Presentation\Http\Middleware\IdempotenciaMiddleware;
+use Src\Shared\Presentation\Http\Middleware\RequiereRol;
 
 /**
  * Enlaza cada interfaz de MS-03 con su implementacion.
@@ -71,9 +79,8 @@ use Src\Shared\Infrastructure\System\SystemClock;
  * encuentra con la infraestructura. Cambiar de proveedor de pagos, de broker o
  * de base de datos es cambiar una linea aqui: ningun caso de uso se toca.
  *
- * No carga rutas: el alcance actual es solo backend, sin capa de Presentacion.
- * Cuando exista, cada paquete registrara las suyas con
- * `loadRoutesFrom(base_path('src/<Paquete>/Presentation/Http/routes.php'))`.
+ * Tambien registra la capa HTTP: autenticador, alias de middleware y las
+ * rutas de cada paquete (`src/<Paquete>/Presentation/Http/routes.php`).
  */
 final class ComercialServiceProvider extends ServiceProvider
 {
@@ -83,6 +90,10 @@ final class ComercialServiceProvider extends ServiceProvider
      *
      * @var array<class-string, class-string>
      */
+    private const PAQUETES_CON_RUTAS = [
+        'Shared', 'Pagos', 'Promociones', 'Acuerdos', 'Monetizacion', 'Liquidaciones', 'Referencias',
+    ];
+
     private const ENLACES = [
         // Shared: transversal
         OutboxRepository::class => EloquentOutboxRepository::class,
@@ -134,6 +145,44 @@ final class ComercialServiceProvider extends ServiceProvider
 
         $this->registrarBroker();
         $this->registrarPasarela();
+        $this->registrarAutenticador();
+    }
+
+    public function boot(Router $router): void
+    {
+        $router->aliasMiddleware('sesion', AutenticarSesion::class);
+        $router->aliasMiddleware('rol', RequiereRol::class);
+        $router->aliasMiddleware('idempotente', IdempotenciaMiddleware::class);
+
+        foreach (self::PAQUETES_CON_RUTAS as $paquete) {
+            $archivo = base_path("src/{$paquete}/Presentation/Http/routes.php");
+            if (is_file($archivo)) {
+                $this->loadRoutesFrom($archivo);
+            }
+        }
+    }
+
+    /**
+     * Para cambiar de proveedor de identidad se cambia solo este enlace.
+     * El JWKS de Keycloak se cachea para no pedirlo en cada peticion.
+     */
+    private function registrarAutenticador(): void
+    {
+        $this->app->singleton(
+            AutenticadorDeSolicitud::class,
+            static fn (): AutenticadorDeSolicitud => new KeycloakJwtAutenticador(
+                (string) config('comercial.keycloak.issuer'),
+                (string) config('comercial.keycloak.audience'),
+                static fn (): array => Cache::remember(
+                    'comercial.keycloak.jwks',
+                    (int) config('comercial.keycloak.jwks_ttl'),
+                    static fn (): array => Http::timeout(5)
+                        ->get((string) config('comercial.keycloak.jwks_url'))
+                        ->throw()
+                        ->json(),
+                ),
+            ),
+        );
     }
 
     /**

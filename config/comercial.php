@@ -37,6 +37,15 @@ return [
         'colas_consumidas' => ['usuarios.events', 'reservas.events'],
     ],
 
+    'keycloak' => [
+        // Quien emite los tokens y para quien son. Solo claves publicas (JWKS):
+        // MS-03 no guarda ningun secreto compartido.
+        'issuer' => env('KEYCLOAK_ISSUER', 'http://localhost:8080/realms/alojate'),
+        'audience' => env('KEYCLOAK_AUDIENCE', 'ms03-comercial-financiero'),
+        'jwks_url' => env('KEYCLOAK_JWKS_URL', 'http://localhost:8080/realms/alojate/protocol/openid-connect/certs'),
+        'jwks_ttl' => (int) env('KEYCLOAK_JWKS_TTL', 3600),
+    ],
+
     'liquidaciones' => [
         // Plazo por omision cuando el anfitrion no tiene acuerdo ACTIVO;
         // coincide con el DEFAULT de `acuerdo_comercial.dias_liquidacion`.

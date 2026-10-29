@@ -18,6 +18,9 @@
             <directory>tests/Architecture</directory>
         </testsuite>
         <!-- Repositorios y restricciones contra PostgreSQL real (se omiten si no hay conexion). -->
+        <testsuite name="Feature">
+            <directory>tests/Feature</directory>
+        </testsuite>
         <testsuite name="Integration">
             <directory>tests/Integration</directory>
         </testsuite>

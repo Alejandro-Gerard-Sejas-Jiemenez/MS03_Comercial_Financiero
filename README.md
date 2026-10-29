@@ -9,7 +9,7 @@ Microservicio de pagos, comisiones, liquidaciones, promociones y monetización d
 | --- | --- |
 | **Casos de uso** | 35, documentados en [`CASOS_DE_USO.md`](CASOS_DE_USO.md) |
 | **Tablas** | 19 en el esquema `comercial` |
-| **Alcance de esta entrega** | Backend: Dominio, Aplicación e Infraestructura. **Sin capa de Presentación** |
+| **Alcance de esta entrega** | Backend (Dominio, Aplicación, Infraestructura) y base de Presentation (P1): autenticación Keycloak, idempotencia HTTP, mapeo de errores, `GET /api/v1/salud`. Faltan los endpoints por paquete (P2) |
 | **Arquitectura de referencia** | `context/MS-03 Comercial y Financiero — Arquitectura Clean (Laravel).md` |
 
 ## Cómo correrlo
@@ -76,4 +76,4 @@ src/<Paquete>/
 
 ## Qué falta
 
-La capa de Presentación (controladores, rutas, consumidores de RabbitMQ y comandos de Artisan) y los contratos a acordar con los otros microservicios. El detalle, con su justificación, está en la sección 10 de [`CASOS_DE_USO.md`](CASOS_DE_USO.md).
+Los endpoints REST por paquete (P2), los consumidores de RabbitMQ y comandos de Artisan (P4) y los contratos a acordar con los otros microservicios. El detalle, con su justificación, está en la sección 10 de [`CASOS_DE_USO.md`](CASOS_DE_USO.md).

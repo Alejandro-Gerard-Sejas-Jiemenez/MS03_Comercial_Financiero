@@ -639,7 +639,7 @@ Los nombres de eventos y endpoints son la propuesta del documento de arquitectur
 
 ### Pendiente por decisión del alcance
 
-La **capa de Presentación** no existe, como se pidió. Falta, por paquete:
+La base de Presentation (P1) existe: JWT de Keycloak, idempotencia, errores y `/api/v1/salud`. Falta, por paquete:
 
 - `Presentation/Http`: controladores, rutas, Form Requests y Resources para los disparadores `REST`, más el middleware que valida el JWT de Keycloak y autoriza por rol (`ADMIN`, `ANFITRION`, `CLIENTE`).
 - `Presentation/Messaging`: consumidores de RabbitMQ para los disparadores `EVT`, que antes de procesar deben descartar los mensajes repetidos con el `InboxRegistry`.
