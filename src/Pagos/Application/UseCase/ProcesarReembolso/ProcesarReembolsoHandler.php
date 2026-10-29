@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Src\Pagos\Application\UseCase\ProcesarReembolso;
 
-use DomainException;
 use Src\Pagos\Application\Port\PasarelaPago;
 use Src\Pagos\Application\Port\ResultadoDevolucion;
 use Src\Pagos\Domain\EstadoTransaccion;
@@ -18,6 +17,8 @@ use Src\Pagos\Domain\TransaccionPagoRepository;
 use Src\Shared\Application\Port\EventPublisher;
 use Src\Shared\Application\Port\TransactionManager;
 use Src\Shared\Application\Port\UuidGenerator;
+use Src\Shared\Domain\Exception\RecursoNoEncontrado;
+use Src\Shared\Domain\Exception\ReglaDeNegocioViolada;
 
 /**
  * CU-PAG-09 ProcesarReembolso (NEG, INT / JOB).
@@ -44,27 +45,26 @@ final class ProcesarReembolsoHandler
         private readonly EventPublisher $eventos,
         private readonly TransactionManager $tx,
         private readonly UuidGenerator $uuid,
-    ) {
-    }
+    ) {}
 
     public function __invoke(ProcesarReembolsoCommand $comando): Reembolso
     {
         $reembolso = $this->reembolsos->buscar($comando->reembolsoId)
-            ?? throw new DomainException("El reembolso {$comando->reembolsoId} no existe");
+            ?? throw new RecursoNoEncontrado("El reembolso {$comando->reembolsoId} no existe");
 
         if ($reembolso->estaProcesado()) {
             return $reembolso;
         }
 
         $pago = $this->pagos->buscar($reembolso->pagoId())
-            ?? throw new DomainException("El pago {$reembolso->pagoId()} no existe");
+            ?? throw new RecursoNoEncontrado("El pago {$reembolso->pagoId()} no existe");
 
         $acumulado = $this->pagos->totalReembolsado($pago->pagoId())->mas($reembolso->monto());
 
         if ($acumulado->esMayorQue($pago->total())) {
-            throw new DomainException(
+            throw new ReglaDeNegocioViolada(
                 "El reembolso dejaria el acumulado en {$acumulado->aDecimal()}, mayor que el total "
-                . "cobrado {$pago->total()->aDecimal()}",
+                ."cobrado {$pago->total()->aDecimal()}",
             );
         }
 
@@ -82,7 +82,7 @@ final class ProcesarReembolsoHandler
         if (! $resultado->exitoso) {
             $this->tx->ejecutar(fn (): null => $this->registrarIntentoFallido($reembolso, $pago, $resultado));
 
-            throw new DomainException(
+            throw new ReglaDeNegocioViolada(
                 "La pasarela rechazo el reembolso {$reembolso->reembolsoId()}: {$resultado->motivo}",
             );
         }

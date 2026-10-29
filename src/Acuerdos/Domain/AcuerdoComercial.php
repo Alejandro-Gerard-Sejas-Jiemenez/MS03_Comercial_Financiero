@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Src\Acuerdos\Domain;
 
 use DateTimeImmutable;
-use DomainException;
 use Src\Acuerdos\Domain\Event\AcuerdoActivado;
 use Src\Acuerdos\Domain\Event\AcuerdoFinalizado;
 use Src\Acuerdos\Domain\Event\AcuerdoSuspendido;
+use Src\Shared\Domain\Exception\ConflictoDeEstado;
+use Src\Shared\Domain\Exception\ReglaDeNegocioViolada;
 use Src\Shared\Domain\RegistraEventos;
 
 /**
@@ -44,14 +45,13 @@ final class AcuerdoComercial
         private ?string $aprobadoPor,
         private ?DateTimeImmutable $aprobadoEn,
         private ?string $motivoEstado,
-    ) {
-    }
+    ) {}
 
     /**
      * Todo acuerdo nace en BORRADOR: el Administrador lo negocia y recien
      * despues lo activa (CU-ACU-02).
      *
-     * @param array<string, mixed> $condiciones
+     * @param  array<string, mixed>  $condiciones
      */
     public static function crearBorrador(
         string $acuerdoId,
@@ -84,7 +84,7 @@ final class AcuerdoComercial
      * Reconstruye la entidad desde la base de datos, sin revalidar reglas de
      * creacion y sin emitir eventos.
      *
-     * @param array<string, mixed> $condiciones
+     * @param  array<string, mixed>  $condiciones
      */
     public static function reconstituir(
         string $acuerdoId,
@@ -119,7 +119,7 @@ final class AcuerdoComercial
      * Un acuerdo cerrado ya no se toca: su historico sostiene liquidaciones ya
      * hechas.
      *
-     * @param array<string, mixed>|null $condiciones
+     * @param  array<string, mixed>|null  $condiciones
      */
     public function actualizarCondiciones(
         ?int $diasLiquidacion = null,
@@ -128,7 +128,7 @@ final class AcuerdoComercial
         ?DateTimeImmutable $fechaFin = null,
     ): void {
         if ($this->estado->esTerminal()) {
-            throw new DomainException(
+            throw new ConflictoDeEstado(
                 "El acuerdo {$this->acuerdoId} esta {$this->estado->value} y ya no admite cambios",
             );
         }
@@ -286,7 +286,7 @@ final class AcuerdoComercial
     private function asegurarTransicion(EstadoAcuerdo $destino): void
     {
         if (! $this->estado->puedeTransicionarA($destino)) {
-            throw new DomainException(
+            throw new ConflictoDeEstado(
                 "El acuerdo {$this->acuerdoId} esta {$this->estado->value} y no puede pasar a {$destino->value}",
             );
         }
@@ -297,7 +297,7 @@ final class AcuerdoComercial
         $limpio = trim($motivo);
 
         if ($limpio === '') {
-            throw new DomainException('El cambio de estado necesita un motivo');
+            throw new ReglaDeNegocioViolada('El cambio de estado necesita un motivo');
         }
 
         return $limpio;
@@ -306,7 +306,7 @@ final class AcuerdoComercial
     private static function validarDiasLiquidacion(int $dias): void
     {
         if ($dias < self::DIAS_LIQUIDACION_MINIMO || $dias > self::DIAS_LIQUIDACION_MAXIMO) {
-            throw new DomainException(
+            throw new ReglaDeNegocioViolada(
                 sprintf(
                     'Los dias de liquidacion deben estar entre %d y %d, recibido %d',
                     self::DIAS_LIQUIDACION_MINIMO,
@@ -320,12 +320,12 @@ final class AcuerdoComercial
     private static function validarFechas(DateTimeImmutable $inicio, ?DateTimeImmutable $fin): void
     {
         if ($fin !== null && self::soloFecha($fin) < self::soloFecha($inicio)) {
-            throw new DomainException('El acuerdo no puede terminar antes de empezar');
+            throw new ReglaDeNegocioViolada('El acuerdo no puede terminar antes de empezar');
         }
     }
 
     private static function soloFecha(DateTimeImmutable $fecha): DateTimeImmutable
     {
-        return new DateTimeImmutable($fecha->format('Y-m-d') . ' 00:00:00');
+        return new DateTimeImmutable($fecha->format('Y-m-d').' 00:00:00');
     }
 }

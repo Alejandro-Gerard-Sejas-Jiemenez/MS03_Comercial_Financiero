@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Src\Pagos\Application\UseCase\CancelarPagoPendiente;
 
-use DomainException;
 use Src\Pagos\Domain\Pago;
 use Src\Pagos\Domain\PagoRepository;
 use Src\Shared\Application\Port\EventPublisher;
 use Src\Shared\Application\Port\TransactionManager;
+use Src\Shared\Domain\Exception\RecursoNoEncontrado;
 
 /**
  * CU-PAG-04 CancelarPagoPendiente (NEG, REST / JOB).
@@ -26,13 +26,12 @@ final class CancelarPagoPendienteHandler
         private readonly PagoRepository $pagos,
         private readonly EventPublisher $eventos,
         private readonly TransactionManager $tx,
-    ) {
-    }
+    ) {}
 
     public function __invoke(CancelarPagoPendienteCommand $comando): Pago
     {
         $pago = $this->pagos->buscar($comando->pagoId)
-            ?? throw new DomainException("El pago {$comando->pagoId} no existe");
+            ?? throw new RecursoNoEncontrado("El pago {$comando->pagoId} no existe");
 
         return $this->tx->ejecutar(function () use ($pago, $comando): Pago {
             $pago->cancelar($comando->motivo);

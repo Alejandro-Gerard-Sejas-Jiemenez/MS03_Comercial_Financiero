@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Src\Acuerdos\Application\UseCase\VerificarMetodoCobro;
 
-use DomainException;
 use Src\Acuerdos\Domain\MetodoCobro;
 use Src\Acuerdos\Domain\MetodoCobroRepository;
 use Src\Shared\Application\Port\AuditLogger;
 use Src\Shared\Application\Port\TransactionManager;
+use Src\Shared\Domain\Exception\RecursoNoEncontrado;
 
 /**
  * CU-ACU-04 VerificarMetodoCobro (NEG, disparador REST).
@@ -27,14 +27,13 @@ final class VerificarMetodoCobroHandler
         private readonly MetodoCobroRepository $metodos,
         private readonly TransactionManager $transacciones,
         private readonly AuditLogger $auditoria,
-    ) {
-    }
+    ) {}
 
     public function manejar(VerificarMetodoCobroCommand $comando): MetodoCobro
     {
         return $this->transacciones->ejecutar(function () use ($comando): MetodoCobro {
             $metodo = $this->metodos->buscar($comando->metodoId)
-                ?? throw new DomainException("El metodo de cobro {$comando->metodoId} no existe");
+                ?? throw new RecursoNoEncontrado("El metodo de cobro {$comando->metodoId} no existe");
 
             $estabaVerificado = $metodo->estaVerificado();
 

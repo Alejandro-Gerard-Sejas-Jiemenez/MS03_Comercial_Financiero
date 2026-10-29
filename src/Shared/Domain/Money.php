@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Src\Shared\Domain;
 
-use DomainException;
+use Src\Shared\Domain\Exception\ReglaDeNegocioViolada;
 
 /**
  * Monto de dinero. Objeto de valor inmutable.
@@ -23,8 +23,7 @@ final class Money
     private function __construct(
         private readonly int $centavos,
         private readonly string $moneda,
-    ) {
-    }
+    ) {}
 
     public static function deCentavos(int $centavos, string $moneda = 'BOB'): self
     {
@@ -44,7 +43,7 @@ final class Money
         $limpio = trim($monto);
 
         if (preg_match('/^-?\d+(\.\d{1,2})?$/', $limpio) !== 1) {
-            throw new DomainException("Monto decimal invalido: {$monto}");
+            throw new ReglaDeNegocioViolada("Monto decimal invalido: {$monto}");
         }
 
         $negativo = str_starts_with($limpio, '-');
@@ -55,7 +54,7 @@ final class Money
     }
 
     /**
-     * @param iterable<self> $montos
+     * @param  iterable<self>  $montos
      */
     public static function sumaDe(iterable $montos, string $moneda = 'BOB'): self
     {
@@ -172,13 +171,13 @@ final class Money
 
     public function __toString(): string
     {
-        return $this->aDecimal() . ' ' . $this->moneda;
+        return $this->aDecimal().' '.$this->moneda;
     }
 
     private function asegurarMismaMoneda(self $otro): void
     {
         if ($this->moneda !== $otro->moneda) {
-            throw new DomainException(
+            throw new ReglaDeNegocioViolada(
                 "No se pueden operar montos en {$this->moneda} y {$otro->moneda}",
             );
         }
@@ -189,7 +188,7 @@ final class Money
         $normalizada = strtoupper(trim($moneda));
 
         if (! in_array($normalizada, self::MONEDAS, true)) {
-            throw new DomainException("Moneda no soportada: {$moneda}");
+            throw new ReglaDeNegocioViolada("Moneda no soportada: {$moneda}");
         }
 
         return $normalizada;
@@ -199,13 +198,13 @@ final class Money
     private static function porcentajeEnCentesimas(string|int|float $porcentaje): int
     {
         if (! is_numeric($porcentaje)) {
-            throw new DomainException("Porcentaje invalido: {$porcentaje}");
+            throw new ReglaDeNegocioViolada("Porcentaje invalido: {$porcentaje}");
         }
 
         $valor = (float) $porcentaje;
 
         if ($valor < 0 || $valor > 100) {
-            throw new DomainException("El porcentaje debe estar entre 0 y 100, recibido {$porcentaje}");
+            throw new ReglaDeNegocioViolada("El porcentaje debe estar entre 0 y 100, recibido {$porcentaje}");
         }
 
         return (int) round($valor * 100);

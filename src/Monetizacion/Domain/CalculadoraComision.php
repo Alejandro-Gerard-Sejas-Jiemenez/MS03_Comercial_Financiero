@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Src\Monetizacion\Domain;
 
-use DomainException;
+use Src\Shared\Domain\Exception\ReglaDeNegocioViolada;
 use Src\Shared\Domain\Money;
 
 /**
@@ -48,7 +48,7 @@ final class CalculadoraComision
         $montoComision = $reglaComision?->calcular($baseComisionable) ?? Money::cero($moneda);
 
         if ($montoComision->esMayorQue($baseComisionable)) {
-            throw new DomainException('La comision no puede superar la base comisionable');
+            throw new ReglaDeNegocioViolada('La comision no puede superar la base comisionable');
         }
 
         return new DesgloseComercial(
@@ -70,15 +70,15 @@ final class CalculadoraComision
     private function validarMontos(Money $subtotal, Money $descuento): void
     {
         if ($subtotal->esNegativo()) {
-            throw new DomainException('El subtotal no puede ser negativo');
+            throw new ReglaDeNegocioViolada('El subtotal no puede ser negativo');
         }
 
         if ($descuento->esNegativo()) {
-            throw new DomainException('El descuento no puede ser negativo');
+            throw new ReglaDeNegocioViolada('El descuento no puede ser negativo');
         }
 
         if ($descuento->esMayorQue($subtotal)) {
-            throw new DomainException('El descuento no puede superar el subtotal');
+            throw new ReglaDeNegocioViolada('El descuento no puede superar el subtotal');
         }
     }
 
@@ -91,7 +91,7 @@ final class CalculadoraComision
         ?ReglaMonetizacion $reglaCargoServicio,
     ): void {
         if ($reglaComision !== null && $reglaComision->concepto() !== Concepto::COMISION_ANFITRION) {
-            throw new DomainException(
+            throw new ReglaDeNegocioViolada(
                 "La regla {$reglaComision->reglaId()} no es de concepto COMISION_ANFITRION",
             );
         }
@@ -100,7 +100,7 @@ final class CalculadoraComision
             $reglaCargoServicio !== null
             && $reglaCargoServicio->concepto() !== Concepto::CARGO_SERVICIO_CLIENTE
         ) {
-            throw new DomainException(
+            throw new ReglaDeNegocioViolada(
                 "La regla {$reglaCargoServicio->reglaId()} no es de concepto CARGO_SERVICIO_CLIENTE",
             );
         }

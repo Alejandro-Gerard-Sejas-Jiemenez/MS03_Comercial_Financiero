@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Src\Liquidaciones\Domain;
 
 use DateTimeImmutable;
-use DomainException;
+use Src\Shared\Domain\Exception\ConflictoDeEstado;
+use Src\Shared\Domain\Exception\ReglaDeNegocioViolada;
 use Src\Shared\Domain\Money;
 
 /**
@@ -32,8 +33,7 @@ final class Comision
         private readonly Money $montoNetoAnfitrion,
         private EstadoComision $estado,
         private ?DateTimeImmutable $liquidableDesde,
-    ) {
-    }
+    ) {}
 
     public static function registrar(
         string $comisionId,
@@ -47,15 +47,15 @@ final class Comision
         ?string $acuerdoId = null,
     ): self {
         if ($baseComisionable->esNegativo()) {
-            throw new DomainException('La base comisionable no puede ser negativa');
+            throw new ReglaDeNegocioViolada('La base comisionable no puede ser negativa');
         }
 
         if ($montoComision->esNegativo()) {
-            throw new DomainException('La comision no puede ser negativa');
+            throw new ReglaDeNegocioViolada('La comision no puede ser negativa');
         }
 
         if ($montoComision->esMayorQue($baseComisionable)) {
-            throw new DomainException('La comision no puede superar la base comisionable');
+            throw new ReglaDeNegocioViolada('La comision no puede superar la base comisionable');
         }
 
         return new self(
@@ -115,19 +115,19 @@ final class Comision
     public function marcarLiquidable(DateTimeImmutable $liquidableDesde): void
     {
         if ($this->estado === EstadoComision::REVERTIDA) {
-            throw new DomainException(
+            throw new ConflictoDeEstado(
                 "La comision {$this->comisionId} esta REVERTIDA y no se puede liquidar",
             );
         }
 
         if ($this->estado !== EstadoComision::RETENIDA) {
-            throw new DomainException(
+            throw new ConflictoDeEstado(
                 "Solo una comision RETENIDA se vuelve LIQUIDABLE, no una {$this->estado->value}",
             );
         }
 
         $this->estado = EstadoComision::LIQUIDABLE;
-        $this->liquidableDesde = new DateTimeImmutable($liquidableDesde->format('Y-m-d') . ' 00:00:00');
+        $this->liquidableDesde = new DateTimeImmutable($liquidableDesde->format('Y-m-d').' 00:00:00');
     }
 
     /** Liquidable y con su plazo ya cumplido en la fecha dada. */
@@ -141,14 +141,14 @@ final class Comision
             return false;
         }
 
-        return new DateTimeImmutable($fecha->format('Y-m-d') . ' 00:00:00') >= $this->liquidableDesde;
+        return new DateTimeImmutable($fecha->format('Y-m-d').' 00:00:00') >= $this->liquidableDesde;
     }
 
     /** CU-LIQ-04: entra en una liquidacion. */
     public function asignarALiquidacion(string $liquidacionId): void
     {
         if ($this->estado !== EstadoComision::LIQUIDABLE) {
-            throw new DomainException(
+            throw new ConflictoDeEstado(
                 "Solo se liquida una comision LIQUIDABLE, no una {$this->estado->value}",
             );
         }
@@ -164,7 +164,7 @@ final class Comision
     public function liberar(): void
     {
         if ($this->estado !== EstadoComision::LIQUIDADA) {
-            throw new DomainException(
+            throw new ConflictoDeEstado(
                 "Solo se libera una comision LIQUIDADA, no una {$this->estado->value}",
             );
         }
@@ -185,9 +185,9 @@ final class Comision
         }
 
         if ($this->estado === EstadoComision::LIQUIDADA) {
-            throw new DomainException(
+            throw new ConflictoDeEstado(
                 "La comision {$this->comisionId} ya esta LIQUIDADA: "
-                . 'el reembolso se descuenta de la liquidacion siguiente',
+                .'el reembolso se descuenta de la liquidacion siguiente',
             );
         }
 

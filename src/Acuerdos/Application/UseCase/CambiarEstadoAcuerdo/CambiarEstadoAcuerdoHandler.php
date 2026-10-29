@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Src\Acuerdos\Application\UseCase\CambiarEstadoAcuerdo;
 
-use DomainException;
 use Src\Acuerdos\Domain\AcuerdoComercial;
 use Src\Acuerdos\Domain\AcuerdoComercialRepository;
 use Src\Acuerdos\Domain\EstadoAcuerdo;
@@ -12,6 +11,9 @@ use Src\Shared\Application\Port\AuditLogger;
 use Src\Shared\Application\Port\Clock;
 use Src\Shared\Application\Port\EventPublisher;
 use Src\Shared\Application\Port\TransactionManager;
+use Src\Shared\Domain\Exception\ConflictoDeEstado;
+use Src\Shared\Domain\Exception\RecursoNoEncontrado;
+use Src\Shared\Domain\Exception\ReglaDeNegocioViolada;
 
 /**
  * CU-ACU-02 CambiarEstadoAcuerdo (NEG; disparadores REST / EVT / JOB).
@@ -33,14 +35,13 @@ final class CambiarEstadoAcuerdoHandler
         private readonly TransactionManager $transacciones,
         private readonly Clock $clock,
         private readonly AuditLogger $auditoria,
-    ) {
-    }
+    ) {}
 
     public function manejar(CambiarEstadoAcuerdoCommand $comando): AcuerdoComercial
     {
         return $this->transacciones->ejecutar(function () use ($comando): AcuerdoComercial {
             $acuerdo = $this->acuerdos->buscar($comando->acuerdoId)
-                ?? throw new DomainException("El acuerdo {$comando->acuerdoId} no existe");
+                ?? throw new RecursoNoEncontrado("El acuerdo {$comando->acuerdoId} no existe");
 
             $estadoAnterior = $acuerdo->estado();
 
@@ -55,7 +56,7 @@ final class CambiarEstadoAcuerdoHandler
                     $this->motivoObligatorio($comando),
                     $comando->sagaId,
                 ),
-                EstadoAcuerdo::BORRADOR => throw new DomainException(
+                EstadoAcuerdo::BORRADOR => throw new ConflictoDeEstado(
                     'Un acuerdo no vuelve a BORRADOR',
                 ),
             };
@@ -82,7 +83,7 @@ final class CambiarEstadoAcuerdoHandler
 
         // Reactivar el mismo acuerdo suspendido no choca consigo mismo.
         if ($vigente !== null && $vigente->acuerdoId() !== $acuerdo->acuerdoId()) {
-            throw new DomainException(
+            throw new ReglaDeNegocioViolada(
                 sprintf(
                     'El anfitrion %s ya tiene el acuerdo %s ACTIVO: finalicelo o suspendalo antes',
                     $acuerdo->anfitrionId(),
@@ -97,7 +98,7 @@ final class CambiarEstadoAcuerdoHandler
     private function motivoObligatorio(CambiarEstadoAcuerdoCommand $comando): string
     {
         return $comando->motivo
-            ?? throw new DomainException(
+            ?? throw new ReglaDeNegocioViolada(
                 "Pasar a {$comando->estadoDestino->value} necesita un motivo",
             );
     }

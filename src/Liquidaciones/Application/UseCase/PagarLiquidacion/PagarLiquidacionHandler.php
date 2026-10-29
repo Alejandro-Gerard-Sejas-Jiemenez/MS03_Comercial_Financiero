@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Src\Liquidaciones\Application\UseCase\PagarLiquidacion;
 
-use DomainException;
 use Src\Liquidaciones\Domain\Asiento;
 use Src\Liquidaciones\Domain\LibroContableRepository;
 use Src\Liquidaciones\Domain\Liquidacion;
@@ -13,6 +12,7 @@ use Src\Shared\Application\Port\AuditLogger;
 use Src\Shared\Application\Port\EventPublisher;
 use Src\Shared\Application\Port\TransactionManager;
 use Src\Shared\Application\Port\UuidGenerator;
+use Src\Shared\Domain\Exception\RecursoNoEncontrado;
 
 /**
  * CU-LIQ-07 PagarLiquidacion (NEG, REST).
@@ -33,13 +33,12 @@ final class PagarLiquidacionHandler
         private readonly AuditLogger $auditoria,
         private readonly UuidGenerator $uuid,
         private readonly TransactionManager $tx,
-    ) {
-    }
+    ) {}
 
     public function __invoke(PagarLiquidacionCommand $comando): Liquidacion
     {
         $liquidacion = $this->liquidaciones->buscar($comando->liquidacionId)
-            ?? throw new DomainException("La liquidacion {$comando->liquidacionId} no existe");
+            ?? throw new RecursoNoEncontrado("La liquidacion {$comando->liquidacionId} no existe");
 
         if ($liquidacion->estaPagada()) {
             return $liquidacion;

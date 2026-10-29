@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Src\Pagos\Domain;
 
-use DomainException;
+use Src\Shared\Domain\Exception\ReglaDeNegocioViolada;
 use Src\Shared\Domain\Money;
 
 /**
@@ -25,7 +25,7 @@ final class TransaccionPago
         public readonly ?array $respuestaPasarela,
     ) {
         if (! $this->monto->esPositivo()) {
-            throw new DomainException('Una transaccion con la pasarela debe tener monto positivo');
+            throw new ReglaDeNegocioViolada('Una transaccion con la pasarela debe tener monto positivo');
         }
     }
 

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Src\Pagos\Application\UseCase\ConsultarPagos;
 
-use DomainException;
 use Src\Pagos\Domain\Comprobante;
 use Src\Pagos\Domain\ComprobanteRepository;
 use Src\Pagos\Domain\CriterioDePagos;
@@ -14,6 +13,7 @@ use Src\Pagos\Domain\Reembolso;
 use Src\Pagos\Domain\ReembolsoRepository;
 use Src\Pagos\Domain\TransaccionPago;
 use Src\Pagos\Domain\TransaccionPagoRepository;
+use Src\Shared\Domain\Exception\RecursoNoEncontrado;
 
 /**
  * CU-PAG-06 ConsultarPagos (QRY, REST).
@@ -30,13 +30,12 @@ final class ConsultarPagosService
         private readonly TransaccionPagoRepository $transacciones,
         private readonly ReembolsoRepository $reembolsos,
         private readonly ComprobanteRepository $comprobantes,
-    ) {
-    }
+    ) {}
 
     public function detalle(string $pagoId): DetalleDePago
     {
         $pago = $this->pagos->buscar($pagoId)
-            ?? throw new DomainException("El pago {$pagoId} no existe");
+            ?? throw new RecursoNoEncontrado("El pago {$pagoId} no existe");
 
         return new DetalleDePago(
             pago: $pago,
@@ -56,7 +55,7 @@ final class ConsultarPagosService
     public function comprobanteDe(string $pagoId): Comprobante
     {
         return $this->comprobantes->delPago($pagoId)
-            ?? throw new DomainException("El pago {$pagoId} no tiene comprobante emitido");
+            ?? throw new RecursoNoEncontrado("El pago {$pagoId} no tiene comprobante emitido");
     }
 
     /** @return list<TransaccionPago> */

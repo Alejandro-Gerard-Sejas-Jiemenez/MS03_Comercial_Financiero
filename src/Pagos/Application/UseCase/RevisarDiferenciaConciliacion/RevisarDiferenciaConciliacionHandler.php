@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Src\Pagos\Application\UseCase\RevisarDiferenciaConciliacion;
 
-use DomainException;
 use Src\Pagos\Domain\Conciliacion;
 use Src\Pagos\Domain\ConciliacionRepository;
 use Src\Shared\Application\Port\AuditLogger;
 use Src\Shared\Application\Port\TransactionManager;
+use Src\Shared\Domain\Exception\RecursoNoEncontrado;
 
 /**
  * CU-PAG-12 RevisarDiferenciaConciliacion (NEG, REST).
@@ -23,13 +23,12 @@ final class RevisarDiferenciaConciliacionHandler
         private readonly ConciliacionRepository $conciliaciones,
         private readonly AuditLogger $auditoria,
         private readonly TransactionManager $tx,
-    ) {
-    }
+    ) {}
 
     public function __invoke(RevisarDiferenciaConciliacionCommand $comando): Conciliacion
     {
         $conciliacion = $this->conciliaciones->buscar($comando->conciliacionId)
-            ?? throw new DomainException("La conciliacion {$comando->conciliacionId} no existe");
+            ?? throw new RecursoNoEncontrado("La conciliacion {$comando->conciliacionId} no existe");
 
         $estadoAnterior = $conciliacion->estado()->value;
 

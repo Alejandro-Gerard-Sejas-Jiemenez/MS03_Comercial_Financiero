@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Src\Pagos\Application\UseCase\CobrarPago;
 
-use DomainException;
 use Src\Pagos\Application\Port\PasarelaPago;
 use Src\Pagos\Domain\EstadoTransaccion;
 use Src\Pagos\Domain\Pago;
@@ -15,6 +14,7 @@ use Src\Pagos\Domain\TransaccionPagoRepository;
 use Src\Shared\Application\Port\EventPublisher;
 use Src\Shared\Application\Port\TransactionManager;
 use Src\Shared\Application\Port\UuidGenerator;
+use Src\Shared\Domain\Exception\RecursoNoEncontrado;
 
 /**
  * CU-PAG-03 CobrarPago (NEG, REST / INT).
@@ -40,13 +40,12 @@ final class CobrarPagoHandler
         private readonly EventPublisher $eventos,
         private readonly TransactionManager $tx,
         private readonly UuidGenerator $uuid,
-    ) {
-    }
+    ) {}
 
     public function __invoke(CobrarPagoCommand $comando): Pago
     {
         $pago = $this->pagos->buscar($comando->pagoId)
-            ?? throw new DomainException("El pago {$comando->pagoId} no existe");
+            ?? throw new RecursoNoEncontrado("El pago {$comando->pagoId} no existe");
 
         // Un pago ya capturado no se vuelve a cobrar: el reintento es idempotente.
         if ($pago->estaCapturado()) {

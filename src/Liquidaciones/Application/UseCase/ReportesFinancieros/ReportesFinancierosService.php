@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Src\Liquidaciones\Application\UseCase\ReportesFinancieros;
 
 use DateTimeImmutable;
-use DomainException;
 use Src\Liquidaciones\Application\Port\ConsultaDeReportes;
 use Src\Liquidaciones\Application\Port\IngresoPorCategoria;
 use Src\Liquidaciones\Application\Port\ResumenDeIngresos;
+use Src\Shared\Domain\Exception\ReglaDeNegocioViolada;
 
 /**
  * CU-LIQ-10 ReportesFinancieros (QRY, REST).
@@ -19,9 +19,7 @@ use Src\Liquidaciones\Application\Port\ResumenDeIngresos;
  */
 final class ReportesFinancierosService
 {
-    public function __construct(private readonly ConsultaDeReportes $consulta)
-    {
-    }
+    public function __construct(private readonly ConsultaDeReportes $consulta) {}
 
     public function ingresos(
         DateTimeImmutable $desde,
@@ -47,7 +45,7 @@ final class ReportesFinancierosService
     private function validarPeriodo(DateTimeImmutable $desde, DateTimeImmutable $hasta): void
     {
         if ($hasta < $desde) {
-            throw new DomainException('El periodo del reporte no puede terminar antes de empezar');
+            throw new ReglaDeNegocioViolada('El periodo del reporte no puede terminar antes de empezar');
         }
     }
 }

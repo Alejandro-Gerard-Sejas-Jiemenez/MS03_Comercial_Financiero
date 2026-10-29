@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Src\Pagos\Application\UseCase\CrearPago;
 
-use DomainException;
 use Src\Pagos\Domain\Pago;
 use Src\Pagos\Domain\PagoRepository;
 use Src\Shared\Application\Port\TransactionManager;
 use Src\Shared\Application\Port\UuidGenerator;
+use Src\Shared\Domain\Exception\ConflictoDeEstado;
 use Src\Shared\Domain\Money;
 
 /**
@@ -26,8 +26,7 @@ final class CrearPagoHandler
         private readonly PagoRepository $pagos,
         private readonly UuidGenerator $uuid,
         private readonly TransactionManager $tx,
-    ) {
-    }
+    ) {}
 
     public function __invoke(CrearPagoCommand $comando): Pago
     {
@@ -42,7 +41,7 @@ final class CrearPagoHandler
         $vivo = $this->pagos->buscarVivoPorReserva($comando->reservaId);
 
         if ($vivo !== null) {
-            throw new DomainException(
+            throw new ConflictoDeEstado(
                 "La reserva {$comando->reservaId} ya tiene un pago vivo ({$vivo->estado()->value})",
             );
         }

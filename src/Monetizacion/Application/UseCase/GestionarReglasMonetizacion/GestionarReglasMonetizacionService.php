@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Src\Monetizacion\Application\UseCase\GestionarReglasMonetizacion;
 
 use DateTimeImmutable;
-use DomainException;
 use Src\Monetizacion\Domain\Concepto;
 use Src\Monetizacion\Domain\EstadoRegla;
 use Src\Monetizacion\Domain\ReglaMonetizacion;
@@ -14,6 +13,8 @@ use Src\Monetizacion\Domain\TipoCalculo;
 use Src\Shared\Application\Port\AuditLogger;
 use Src\Shared\Application\Port\Clock;
 use Src\Shared\Application\Port\UuidGenerator;
+use Src\Shared\Domain\Exception\RecursoNoEncontrado;
+use Src\Shared\Domain\Exception\ReglaDeNegocioViolada;
 use Src\Shared\Domain\Money;
 
 /**
@@ -33,8 +34,7 @@ final class GestionarReglasMonetizacionService
         private readonly UuidGenerator $uuid,
         private readonly Clock $clock,
         private readonly AuditLogger $auditoria,
-    ) {
-    }
+    ) {}
 
     public function crear(CrearReglaCommand $comando): ReglaMonetizacion
     {
@@ -43,7 +43,7 @@ final class GestionarReglasMonetizacionService
                 reglaId: $this->uuid->generar(),
                 nombre: $comando->nombre,
                 concepto: $comando->concepto,
-                porcentaje: $comando->porcentaje ?? throw new DomainException(
+                porcentaje: $comando->porcentaje ?? throw new ReglaDeNegocioViolada(
                     'Una regla PORCENTAJE necesita porcentaje',
                 ),
                 vigenteDesde: $comando->vigenteDesde,
@@ -58,7 +58,7 @@ final class GestionarReglasMonetizacionService
                 nombre: $comando->nombre,
                 concepto: $comando->concepto,
                 montoFijo: Money::deCentavos(
-                    $comando->montoFijoCentavos ?? throw new DomainException(
+                    $comando->montoFijoCentavos ?? throw new ReglaDeNegocioViolada(
                         'Una regla MONTO_FIJO necesita monto',
                     ),
                     $comando->moneda,
@@ -175,7 +175,7 @@ final class GestionarReglasMonetizacionService
     private function obligatoria(string $reglaId): ReglaMonetizacion
     {
         return $this->reglas->buscar($reglaId)
-            ?? throw new DomainException("La regla {$reglaId} no existe");
+            ?? throw new RecursoNoEncontrado("La regla {$reglaId} no existe");
     }
 
     /** @return array<string, string|null> */

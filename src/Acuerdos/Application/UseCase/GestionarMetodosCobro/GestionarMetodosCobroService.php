@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace Src\Acuerdos\Application\UseCase\GestionarMetodosCobro;
 
-use DomainException;
 use Src\Acuerdos\Application\Port\CifradorDeDatos;
 use Src\Acuerdos\Domain\MetodoCobro;
 use Src\Acuerdos\Domain\MetodoCobroRepository;
 use Src\Shared\Application\Port\AuditLogger;
 use Src\Shared\Application\Port\TransactionManager;
 use Src\Shared\Application\Port\UuidGenerator;
+use Src\Shared\Domain\Exception\OperacionNoPermitida;
+use Src\Shared\Domain\Exception\RecursoNoEncontrado;
+use Src\Shared\Domain\Exception\ReglaDeNegocioViolada;
 
 /**
  * CU-ACU-03 GestionarMetodosCobro (CRUD, disparador REST).
@@ -36,8 +38,7 @@ final class GestionarMetodosCobroService
         private readonly UuidGenerator $uuid,
         private readonly TransactionManager $transacciones,
         private readonly AuditLogger $auditoria,
-    ) {
-    }
+    ) {}
 
     public function registrar(RegistrarMetodoCobroCommand $comando): MetodoCobro
     {
@@ -113,7 +114,7 @@ final class GestionarMetodosCobroService
             $metodo = $this->obligatorio($metodoId);
 
             if (! $metodo->esDe($anfitrionId)) {
-                throw new DomainException("El metodo {$metodoId} no es del anfitrion {$anfitrionId}");
+                throw new OperacionNoPermitida("El metodo {$metodoId} no es del anfitrion {$anfitrionId}");
             }
 
             $this->degradarAnterior($this->metodos->principalDe($anfitrionId), $metodoId);
@@ -158,7 +159,7 @@ final class GestionarMetodosCobroService
     private function obligatorio(string $metodoId): MetodoCobro
     {
         return $this->metodos->buscar($metodoId)
-            ?? throw new DomainException("El metodo de cobro {$metodoId} no existe");
+            ?? throw new RecursoNoEncontrado("El metodo de cobro {$metodoId} no existe");
     }
 
     /**
@@ -185,9 +186,9 @@ final class GestionarMetodosCobroService
         $limpio = preg_replace('/\s+/', '', trim($numero)) ?? '';
 
         if (strlen($limpio) < self::LARGO_MINIMO_NUMERO) {
-            throw new DomainException(
+            throw new ReglaDeNegocioViolada(
                 'El numero de la cuenta es demasiado corto: necesita al menos '
-                . self::LARGO_MINIMO_NUMERO . ' caracteres',
+                .self::LARGO_MINIMO_NUMERO.' caracteres',
             );
         }
 

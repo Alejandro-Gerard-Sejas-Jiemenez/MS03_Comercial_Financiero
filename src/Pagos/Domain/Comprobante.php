@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Src\Pagos\Domain;
 
-use DomainException;
+use Src\Shared\Domain\Exception\ReglaDeNegocioViolada;
 use Src\Shared\Domain\Money;
 
 /**
@@ -23,8 +23,7 @@ final class Comprobante
         private readonly ?string $razonSocial,
         private ?string $archivoUrl,
         private ?string $hashDocumento,
-    ) {
-    }
+    ) {}
 
     public static function emitir(
         string $comprobanteId,
@@ -36,16 +35,16 @@ final class Comprobante
         ?string $razonSocial = null,
     ): self {
         if (trim($numero) === '') {
-            throw new DomainException('El comprobante necesita un numero');
+            throw new ReglaDeNegocioViolada('El comprobante necesita un numero');
         }
 
         if ($monto->esNegativo()) {
-            throw new DomainException('El comprobante no puede tener monto negativo');
+            throw new ReglaDeNegocioViolada('El comprobante no puede tener monto negativo');
         }
 
         // Una factura en Bolivia necesita a quien se le factura.
         if ($tipo === TipoComprobante::FACTURA && ($nitCliente === null || trim($nitCliente) === '')) {
-            throw new DomainException('Una FACTURA necesita el NIT del cliente');
+            throw new ReglaDeNegocioViolada('Una FACTURA necesita el NIT del cliente');
         }
 
         return new self(
@@ -92,7 +91,7 @@ final class Comprobante
     public function adjuntarArchivo(string $archivoUrl, string $hashDocumento): void
     {
         if (strlen($hashDocumento) !== 64) {
-            throw new DomainException('El hash del documento debe ser un SHA-256 de 64 caracteres');
+            throw new ReglaDeNegocioViolada('El hash del documento debe ser un SHA-256 de 64 caracteres');
         }
 
         $this->archivoUrl = $archivoUrl;

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Src\Liquidaciones\Application\UseCase\MarcarComisionesLiquidables;
 
-use DomainException;
 use Src\Acuerdos\Application\Port\AcuerdoComercialQuery;
 use Src\Liquidaciones\Domain\ComisionRepository;
 use Src\Referencias\Domain\ReservaReferenceRepository;
 use Src\Shared\Application\Port\TransactionManager;
+use Src\Shared\Domain\Exception\RecursoNoEncontrado;
 
 /**
  * CU-LIQ-03 MarcarComisionesLiquidables (EVT `estadia.completada` / JOB).
@@ -32,14 +32,13 @@ final class MarcarComisionesLiquidablesHandler
         private readonly ReservaReferenceRepository $reservas,
         private readonly AcuerdoComercialQuery $acuerdos,
         private readonly TransactionManager $tx,
-    ) {
-    }
+    ) {}
 
     /** @return list<string> ids de las comisiones que pasaron a LIQUIDABLE */
     public function __invoke(MarcarComisionesLiquidablesCommand $comando): array
     {
         $reserva = $this->reservas->buscar($comando->reservaId)
-            ?? throw new DomainException(
+            ?? throw new RecursoNoEncontrado(
                 "No hay copia local de la reserva {$comando->reservaId}; falta el evento de MS-02",
             );
 

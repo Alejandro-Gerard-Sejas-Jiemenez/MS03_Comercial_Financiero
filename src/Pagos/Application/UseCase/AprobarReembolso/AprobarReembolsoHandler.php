@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Src\Pagos\Application\UseCase\AprobarReembolso;
 
-use DomainException;
 use Src\Pagos\Domain\Reembolso;
 use Src\Pagos\Domain\ReembolsoRepository;
 use Src\Shared\Application\Port\AuditLogger;
 use Src\Shared\Application\Port\TransactionManager;
+use Src\Shared\Domain\Exception\RecursoNoEncontrado;
+use Src\Shared\Domain\Exception\ReglaDeNegocioViolada;
 
 /**
  * CU-PAG-08 AprobarReembolso (NEG, REST).
@@ -23,13 +24,12 @@ final class AprobarReembolsoHandler
         private readonly ReembolsoRepository $reembolsos,
         private readonly AuditLogger $auditoria,
         private readonly TransactionManager $tx,
-    ) {
-    }
+    ) {}
 
     public function __invoke(AprobarReembolsoCommand $comando): Reembolso
     {
         $reembolso = $this->reembolsos->buscar($comando->reembolsoId)
-            ?? throw new DomainException("El reembolso {$comando->reembolsoId} no existe");
+            ?? throw new RecursoNoEncontrado("El reembolso {$comando->reembolsoId} no existe");
 
         $estadoAnterior = $reembolso->estado()->value;
 
@@ -38,7 +38,7 @@ final class AprobarReembolsoHandler
                 $reembolso->aprobar($comando->detalle);
             } else {
                 $reembolso->rechazar(
-                    $comando->detalle ?? throw new DomainException('Un rechazo necesita explicacion'),
+                    $comando->detalle ?? throw new ReglaDeNegocioViolada('Un rechazo necesita explicacion'),
                 );
             }
 

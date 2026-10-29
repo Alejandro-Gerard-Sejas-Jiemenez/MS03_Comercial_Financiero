@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Src\Liquidaciones\Domain;
 
 use DateTimeImmutable;
-use DomainException;
 use Src\Liquidaciones\Domain\Event\LiquidacionPagada;
+use Src\Shared\Domain\Exception\ConflictoDeEstado;
+use Src\Shared\Domain\Exception\ReglaDeNegocioViolada;
 use Src\Shared\Domain\Money;
 use Src\Shared\Domain\RegistraEventos;
 
@@ -35,8 +36,7 @@ final class Liquidacion
         private EstadoLiquidacion $estado,
         private ?string $aprobadoPor,
         private ?string $referenciaTransferencia,
-    ) {
-    }
+    ) {}
 
     public static function generar(
         string $liquidacionId,
@@ -49,20 +49,20 @@ final class Liquidacion
         ?string $metodoId = null,
     ): self {
         if ($periodoHasta < $periodoDesde) {
-            throw new DomainException('El periodo no puede terminar antes de empezar');
+            throw new ReglaDeNegocioViolada('El periodo no puede terminar antes de empezar');
         }
 
         $neto = $totalBruto->menos($totalComisiones)->menos($totalReembolsos);
 
         if ($neto->esNegativo()) {
-            throw new DomainException(
+            throw new ReglaDeNegocioViolada(
                 "La liquidacion quedaria en {$neto->aDecimal()}: "
-                . 'los reembolsos superan lo que se le debe al anfitrion',
+                .'los reembolsos superan lo que se le debe al anfitrion',
             );
         }
 
         if ($neto->esCero()) {
-            throw new DomainException('No se genera una liquidacion de monto cero');
+            throw new ReglaDeNegocioViolada('No se genera una liquidacion de monto cero');
         }
 
         return new self(
@@ -117,13 +117,13 @@ final class Liquidacion
     public function aprobar(string $aprobadoPor): void
     {
         if ($this->estado !== EstadoLiquidacion::GENERADA) {
-            throw new DomainException(
+            throw new ConflictoDeEstado(
                 "Solo se aprueba una liquidacion GENERADA, no una {$this->estado->value}",
             );
         }
 
         if ($this->metodoId === null) {
-            throw new DomainException(
+            throw new ReglaDeNegocioViolada(
                 'No se aprueba una liquidacion sin metodo de cobro verificado del anfitrion',
             );
         }
@@ -136,13 +136,13 @@ final class Liquidacion
     public function rechazar(string $rechazadoPor, string $motivo): void
     {
         if ($this->estado !== EstadoLiquidacion::GENERADA) {
-            throw new DomainException(
+            throw new ConflictoDeEstado(
                 "Solo se rechaza una liquidacion GENERADA, no una {$this->estado->value}",
             );
         }
 
         if (trim($motivo) === '') {
-            throw new DomainException('Rechazar una liquidacion exige un motivo');
+            throw new ReglaDeNegocioViolada('Rechazar una liquidacion exige un motivo');
         }
 
         $this->estado = EstadoLiquidacion::RECHAZADA;
@@ -157,13 +157,13 @@ final class Liquidacion
     public function anular(string $motivo): void
     {
         if (! in_array($this->estado, [EstadoLiquidacion::GENERADA, EstadoLiquidacion::APROBADA], true)) {
-            throw new DomainException(
+            throw new ConflictoDeEstado(
                 "No se anula una liquidacion en estado {$this->estado->value}",
             );
         }
 
         if (trim($motivo) === '') {
-            throw new DomainException('Anular una liquidacion exige un motivo');
+            throw new ReglaDeNegocioViolada('Anular una liquidacion exige un motivo');
         }
 
         $this->estado = EstadoLiquidacion::ANULADA;
@@ -173,13 +173,13 @@ final class Liquidacion
     public function pagar(string $referenciaTransferencia): void
     {
         if ($this->estado !== EstadoLiquidacion::APROBADA) {
-            throw new DomainException(
+            throw new ConflictoDeEstado(
                 "Solo se paga una liquidacion APROBADA, no una {$this->estado->value}",
             );
         }
 
         if (trim($referenciaTransferencia) === '') {
-            throw new DomainException('Pagar una liquidacion exige la referencia de la transferencia');
+            throw new ReglaDeNegocioViolada('Pagar una liquidacion exige la referencia de la transferencia');
         }
 
         $this->estado = EstadoLiquidacion::PAGADA;
@@ -198,7 +198,7 @@ final class Liquidacion
     public function asignarMetodoDeCobro(string $metodoId): void
     {
         if ($this->estado !== EstadoLiquidacion::GENERADA) {
-            throw new DomainException(
+            throw new ConflictoDeEstado(
                 "El metodo de cobro se asigna antes de aprobar, no en estado {$this->estado->value}",
             );
         }
@@ -273,6 +273,6 @@ final class Liquidacion
 
     private static function soloFecha(DateTimeImmutable $fecha): DateTimeImmutable
     {
-        return new DateTimeImmutable($fecha->format('Y-m-d') . ' 00:00:00');
+        return new DateTimeImmutable($fecha->format('Y-m-d').' 00:00:00');
     }
 }

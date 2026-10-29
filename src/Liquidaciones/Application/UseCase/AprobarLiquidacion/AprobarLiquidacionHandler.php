@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace Src\Liquidaciones\Application\UseCase\AprobarLiquidacion;
 
-use DomainException;
 use Src\Acuerdos\Application\Port\MetodoCobroQuery;
 use Src\Liquidaciones\Domain\Liquidacion;
 use Src\Liquidaciones\Domain\LiquidacionRepository;
 use Src\Referencias\Domain\AnfitrionReferenceRepository;
 use Src\Shared\Application\Port\AuditLogger;
 use Src\Shared\Application\Port\TransactionManager;
+use Src\Shared\Domain\Exception\OperacionNoPermitida;
+use Src\Shared\Domain\Exception\RecursoNoEncontrado;
+use Src\Shared\Domain\Exception\ReglaDeNegocioViolada;
 
 /**
  * CU-LIQ-05 AprobarLiquidacion (NEG, REST).
@@ -27,18 +29,17 @@ final class AprobarLiquidacionHandler
         private readonly MetodoCobroQuery $metodosDeCobro,
         private readonly AuditLogger $auditoria,
         private readonly TransactionManager $tx,
-    ) {
-    }
+    ) {}
 
     public function __invoke(AprobarLiquidacionCommand $comando): Liquidacion
     {
         $liquidacion = $this->liquidaciones->buscar($comando->liquidacionId)
-            ?? throw new DomainException("La liquidacion {$comando->liquidacionId} no existe");
+            ?? throw new RecursoNoEncontrado("La liquidacion {$comando->liquidacionId} no existe");
 
         $anfitrion = $this->anfitriones->buscar($liquidacion->anfitrionId());
 
         if ($anfitrion === null || ! $anfitrion->puedeRecibirLiquidaciones()) {
-            throw new DomainException(
+            throw new OperacionNoPermitida(
                 "El anfitrion {$liquidacion->anfitrionId()} no esta habilitado para recibir pagos",
             );
         }
@@ -46,7 +47,7 @@ final class AprobarLiquidacionHandler
         $metodo = $this->metodosDeCobro->metodoPrincipalVerificado($liquidacion->anfitrionId());
 
         if ($metodo === null) {
-            throw new DomainException(
+            throw new ReglaDeNegocioViolada(
                 "El anfitrion {$liquidacion->anfitrionId()} no tiene metodo de cobro verificado",
             );
         }

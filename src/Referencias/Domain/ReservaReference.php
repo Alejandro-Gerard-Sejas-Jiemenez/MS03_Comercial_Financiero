@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Src\Referencias\Domain;
 
 use DateTimeImmutable;
-use DomainException;
+use Src\Shared\Domain\Exception\ReglaDeNegocioViolada;
 
 /**
  * Copia local de lo minimo que MS-03 necesita de una reserva de MS-02:
@@ -24,7 +24,7 @@ final class ReservaReference
         public readonly ?string $categoriaAlojamiento = null,
     ) {
         if ($this->fechaCheckout <= $this->fechaCheckin) {
-            throw new DomainException('El check-out debe ser posterior al check-in');
+            throw new ReglaDeNegocioViolada('El check-out debe ser posterior al check-in');
         }
     }
 
@@ -43,7 +43,7 @@ final class ReservaReference
     public function liquidableDesde(int $diasLiquidacion): DateTimeImmutable
     {
         if ($diasLiquidacion < 0) {
-            throw new DomainException('Los dias de liquidacion no pueden ser negativos');
+            throw new ReglaDeNegocioViolada('Los dias de liquidacion no pueden ser negativos');
         }
 
         return $this->fechaCheckout->modify("+{$diasLiquidacion} days");

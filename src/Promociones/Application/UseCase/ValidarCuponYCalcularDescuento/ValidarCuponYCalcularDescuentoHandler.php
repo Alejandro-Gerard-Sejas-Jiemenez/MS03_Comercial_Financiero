@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Src\Promociones\Application\UseCase\ValidarCuponYCalcularDescuento;
 
 use DateTimeImmutable;
-use DomainException;
 use Src\Promociones\Application\Port\CalculadorDeDescuento;
 use Src\Promociones\Application\Port\DescuentoAplicado;
 use Src\Promociones\Application\Port\SolicitudDescuento;
 use Src\Promociones\Domain\Promocion;
 use Src\Promociones\Domain\PromocionRepository;
 use Src\Shared\Application\Port\Clock;
+use Src\Shared\Domain\Exception\RecursoNoEncontrado;
 use Src\Shared\Domain\Money;
 
 /**
@@ -34,8 +34,7 @@ final class ValidarCuponYCalcularDescuentoHandler implements CalculadorDeDescuen
     public function __construct(
         private readonly PromocionRepository $promociones,
         private readonly Clock $clock,
-    ) {
-    }
+    ) {}
 
     public function __invoke(SolicitudDescuento $solicitud): ?DescuentoAplicado
     {
@@ -79,12 +78,12 @@ final class ValidarCuponYCalcularDescuentoHandler implements CalculadorDeDescuen
             $codigo = Promocion::normalizarCodigo($solicitud->codigoCupon);
 
             return $this->promociones->buscarPorCodigo($codigo)
-                ?? throw new DomainException("El cupon {$codigo} no existe");
+                ?? throw new RecursoNoEncontrado("El cupon {$codigo} no existe");
         }
 
         if ($solicitud->promocionId !== null) {
             return $this->promociones->buscar($solicitud->promocionId)
-                ?? throw new DomainException("La promocion {$solicitud->promocionId} no existe");
+                ?? throw new RecursoNoEncontrado("La promocion {$solicitud->promocionId} no existe");
         }
 
         return null;

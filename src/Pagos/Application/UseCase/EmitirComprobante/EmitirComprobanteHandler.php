@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Src\Pagos\Application\UseCase\EmitirComprobante;
 
-use DomainException;
 use Src\Pagos\Application\Port\NumeradorComprobantes;
 use Src\Pagos\Domain\Comprobante;
 use Src\Pagos\Domain\ComprobanteRepository;
 use Src\Pagos\Domain\PagoRepository;
 use Src\Shared\Application\Port\TransactionManager;
 use Src\Shared\Application\Port\UuidGenerator;
+use Src\Shared\Domain\Exception\ConflictoDeEstado;
+use Src\Shared\Domain\Exception\RecursoNoEncontrado;
 
 /**
  * CU-PAG-10 EmitirComprobante (NEG, INT por el evento `PagoCapturado`).
@@ -27,8 +28,7 @@ final class EmitirComprobanteHandler
         private readonly NumeradorComprobantes $numerador,
         private readonly UuidGenerator $uuid,
         private readonly TransactionManager $tx,
-    ) {
-    }
+    ) {}
 
     public function __invoke(EmitirComprobanteCommand $comando): Comprobante
     {
@@ -39,11 +39,11 @@ final class EmitirComprobanteHandler
         }
 
         $pago = $this->pagos->buscar($comando->pagoId)
-            ?? throw new DomainException("El pago {$comando->pagoId} no existe");
+            ?? throw new RecursoNoEncontrado("El pago {$comando->pagoId} no existe");
 
         // Solo se factura lo que se cobro.
         if (! $pago->estaCapturado()) {
-            throw new DomainException(
+            throw new ConflictoDeEstado(
                 "No se emite comprobante de un pago en estado {$pago->estado()->value}",
             );
         }

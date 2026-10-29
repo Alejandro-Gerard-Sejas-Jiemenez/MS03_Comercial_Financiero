@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Src\Liquidaciones\Domain;
 
-use DomainException;
+use Src\Shared\Domain\Exception\ReglaDeNegocioViolada;
 use Src\Shared\Domain\Money;
 
 /**
@@ -23,7 +23,7 @@ final class MovimientoContable
         public readonly ?string $anfitrionId = null,
     ) {
         if (! $this->monto->esPositivo()) {
-            throw new DomainException(
+            throw new ReglaDeNegocioViolada(
                 'Un movimiento contable tiene monto positivo; el signo lo da DEBITO o CREDITO',
             );
         }

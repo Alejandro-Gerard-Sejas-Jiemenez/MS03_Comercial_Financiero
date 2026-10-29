@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Src\Pagos\Domain;
 
-use DomainException;
 use Src\Pagos\Domain\Event\PagoCancelado;
 use Src\Pagos\Domain\Event\PagoCapturado;
 use Src\Pagos\Domain\Event\PagoFallido;
+use Src\Shared\Domain\Exception\ConflictoDeEstado;
+use Src\Shared\Domain\Exception\ReglaDeNegocioViolada;
 use Src\Shared\Domain\Money;
 use Src\Shared\Domain\RegistraEventos;
 
@@ -43,8 +44,7 @@ final class Pago
         private readonly ?string $sagaId,
         private ?string $pasarela,
         private ?string $referenciaPasarela,
-    ) {
-    }
+    ) {}
 
     public static function crear(
         string $pagoId,
@@ -61,19 +61,19 @@ final class Pago
         ?string $pasarela = null,
     ): self {
         if ($subtotal->esNegativo()) {
-            throw new DomainException('El subtotal no puede ser negativo');
+            throw new ReglaDeNegocioViolada('El subtotal no puede ser negativo');
         }
 
         if ($cargoServicio->esNegativo()) {
-            throw new DomainException('El cargo de servicio no puede ser negativo');
+            throw new ReglaDeNegocioViolada('El cargo de servicio no puede ser negativo');
         }
 
         if ($descuento->esNegativo() || $descuento->esMayorQue($subtotal)) {
-            throw new DomainException('El descuento no puede superar el subtotal');
+            throw new ReglaDeNegocioViolada('El descuento no puede superar el subtotal');
         }
 
         if (trim($idempotencyKey) === '') {
-            throw new DomainException('El pago necesita una Idempotency-Key');
+            throw new ReglaDeNegocioViolada('El pago necesita una Idempotency-Key');
         }
 
         return new self(
@@ -147,7 +147,7 @@ final class Pago
     public function autorizar(string $referenciaPasarela, ?string $pasarela = null): void
     {
         if ($this->estado !== EstadoPago::PENDIENTE) {
-            throw new DomainException(
+            throw new ConflictoDeEstado(
                 "No se puede autorizar un pago en estado {$this->estado->value}",
             );
         }
@@ -165,7 +165,7 @@ final class Pago
     public function capturar(string $referenciaPasarela, ?string $pasarela = null): void
     {
         if (! in_array($this->estado, [EstadoPago::PENDIENTE, EstadoPago::AUTORIZADO], true)) {
-            throw new DomainException(
+            throw new ConflictoDeEstado(
                 "No se puede capturar un pago en estado {$this->estado->value}",
             );
         }
@@ -192,7 +192,7 @@ final class Pago
     public function marcarFallido(?string $motivo = null): void
     {
         if (! in_array($this->estado, [EstadoPago::PENDIENTE, EstadoPago::AUTORIZADO], true)) {
-            throw new DomainException(
+            throw new ConflictoDeEstado(
                 "No se puede marcar fallido un pago en estado {$this->estado->value}",
             );
         }
@@ -206,7 +206,7 @@ final class Pago
     public function cancelar(string $motivo): void
     {
         if (! in_array($this->estado, [EstadoPago::PENDIENTE, EstadoPago::AUTORIZADO], true)) {
-            throw new DomainException(
+            throw new ConflictoDeEstado(
                 "Solo se cancela un pago pendiente o autorizado, no uno {$this->estado->value}",
             );
         }
@@ -226,19 +226,19 @@ final class Pago
     public function aplicarReembolso(Money $reembolsadoAcumulado): void
     {
         if (! in_array($this->estado, [EstadoPago::CAPTURADO, EstadoPago::REEMBOLSADO_PARCIAL], true)) {
-            throw new DomainException(
+            throw new ConflictoDeEstado(
                 "No se puede reembolsar un pago en estado {$this->estado->value}",
             );
         }
 
         if ($reembolsadoAcumulado->esNegativo()) {
-            throw new DomainException('El monto reembolsado no puede ser negativo');
+            throw new ReglaDeNegocioViolada('El monto reembolsado no puede ser negativo');
         }
 
         if ($reembolsadoAcumulado->esMayorQue($this->total())) {
-            throw new DomainException(
+            throw new ConflictoDeEstado(
                 'No se puede reembolsar mas que el total del pago '
-                . "({$reembolsadoAcumulado->aDecimal()} > {$this->total()->aDecimal()})",
+                ."({$reembolsadoAcumulado->aDecimal()} > {$this->total()->aDecimal()})",
             );
         }
 

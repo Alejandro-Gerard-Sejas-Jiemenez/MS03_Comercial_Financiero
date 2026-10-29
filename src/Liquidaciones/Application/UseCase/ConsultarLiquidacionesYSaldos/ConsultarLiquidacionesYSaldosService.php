@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Src\Liquidaciones\Application\UseCase\ConsultarLiquidacionesYSaldos;
 
 use DateTimeImmutable;
-use DomainException;
 use Src\Liquidaciones\Domain\Comision;
 use Src\Liquidaciones\Domain\ComisionRepository;
 use Src\Liquidaciones\Domain\EstadoLiquidacion;
@@ -13,6 +12,7 @@ use Src\Liquidaciones\Domain\LibroContableRepository;
 use Src\Liquidaciones\Domain\Liquidacion;
 use Src\Liquidaciones\Domain\LiquidacionRepository;
 use Src\Shared\Application\Port\Clock;
+use Src\Shared\Domain\Exception\RecursoNoEncontrado;
 use Src\Shared\Domain\Money;
 
 /**
@@ -30,8 +30,7 @@ final class ConsultarLiquidacionesYSaldosService
         private readonly ComisionRepository $comisiones,
         private readonly LibroContableRepository $libro,
         private readonly Clock $clock,
-    ) {
-    }
+    ) {}
 
     /** @return list<Liquidacion> */
     public function historialDe(
@@ -45,7 +44,7 @@ final class ConsultarLiquidacionesYSaldosService
     public function detalle(string $liquidacionId): DetalleDeLiquidacion
     {
         $liquidacion = $this->liquidaciones->buscar($liquidacionId)
-            ?? throw new DomainException("La liquidacion {$liquidacionId} no existe");
+            ?? throw new RecursoNoEncontrado("La liquidacion {$liquidacionId} no existe");
 
         return new DetalleDeLiquidacion(
             liquidacion: $liquidacion,

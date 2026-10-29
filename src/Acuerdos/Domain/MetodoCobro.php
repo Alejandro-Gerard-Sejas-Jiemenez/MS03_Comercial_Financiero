@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Src\Acuerdos\Domain;
 
-use DomainException;
+use Src\Shared\Domain\Exception\ReglaDeNegocioViolada;
 
 /**
  * Metodo de cobro del anfitrion (F17): donde se le paga su liquidacion.
@@ -29,8 +29,7 @@ final class MetodoCobro
         private ?string $ultimosDigitos,
         private bool $esPrincipal,
         private bool $verificado,
-    ) {
-    }
+    ) {}
 
     public static function registrar(
         string $metodoId,
@@ -185,7 +184,7 @@ final class MetodoCobro
         $limpio = trim($titular);
 
         if ($limpio === '') {
-            throw new DomainException('El metodo de cobro necesita el titular de la cuenta');
+            throw new ReglaDeNegocioViolada('El metodo de cobro necesita el titular de la cuenta');
         }
 
         return $limpio;
@@ -194,7 +193,7 @@ final class MetodoCobro
     private static function validarNumeroCifrado(string $numeroCifrado): string
     {
         if (trim($numeroCifrado) === '') {
-            throw new DomainException('El metodo de cobro necesita el numero cifrado');
+            throw new ReglaDeNegocioViolada('El metodo de cobro necesita el numero cifrado');
         }
 
         return $numeroCifrado;
@@ -207,7 +206,7 @@ final class MetodoCobro
         }
 
         if (preg_match('/^\d{4}$/', $ultimosDigitos) !== 1) {
-            throw new DomainException("Los ultimos digitos deben ser cuatro: {$ultimosDigitos}");
+            throw new ReglaDeNegocioViolada("Los ultimos digitos deben ser cuatro: {$ultimosDigitos}");
         }
 
         return $ultimosDigitos;

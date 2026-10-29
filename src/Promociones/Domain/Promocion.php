@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Src\Promociones\Domain;
 
 use DateTimeImmutable;
-use DomainException;
 use Src\Monetizacion\Domain\FinanciamientoDescuento;
 use Src\Promociones\Domain\Event\PromocionAplicada;
+use Src\Shared\Domain\Exception\ConflictoDeEstado;
+use Src\Shared\Domain\Exception\ReglaDeNegocioViolada;
 use Src\Shared\Domain\Money;
 use Src\Shared\Domain\RegistraEventos;
 
@@ -46,15 +47,14 @@ final class Promocion
         private int $usosActuales,
         private EstadoPromocion $estado,
         private array $alojamientos,
-    ) {
-    }
+    ) {}
 
     /**
      * Nace en BORRADOR: se publica con `activar()`, para que una promocion a
      * medio configurar no descuente nada.
      *
-     * @param list<string> $alojamientos alojamientos alcanzados; vacio = todos
-     *                                   los del anfitrion (o de la plataforma)
+     * @param  list<string>  $alojamientos  alojamientos alcanzados; vacio = todos
+     *                                      los del anfitrion (o de la plataforma)
      */
     public static function crear(
         string $promocionId,
@@ -102,7 +102,7 @@ final class Promocion
      * Reconstruye la entidad desde la base de datos, sin revalidar reglas de
      * creacion.
      *
-     * @param list<string> $alojamientos
+     * @param  list<string>  $alojamientos
      */
     public static function reconstituir(
         string $promocionId,
@@ -156,11 +156,11 @@ final class Promocion
     public function calcularDescuento(Money $subtotal): Money
     {
         if ($subtotal->esNegativo()) {
-            throw new DomainException('El subtotal no puede ser negativo');
+            throw new ReglaDeNegocioViolada('El subtotal no puede ser negativo');
         }
 
         if ($subtotal->moneda() !== $this->moneda) {
-            throw new DomainException(
+            throw new ReglaDeNegocioViolada(
                 "La promocion {$this->promocionId} esta en {$this->moneda} y el subtotal en {$subtotal->moneda()}",
             );
         }
@@ -198,7 +198,7 @@ final class Promocion
         $motivo = $this->motivoDeNoAplicar($noches, $fecha, $alojamientoId, $anfitrionId);
 
         if ($motivo !== null) {
-            throw new DomainException($motivo);
+            throw new ReglaDeNegocioViolada($motivo);
         }
     }
 
@@ -216,16 +216,16 @@ final class Promocion
         ?string $sagaId = null,
     ): void {
         if ($this->estado === EstadoPromocion::CANCELADA) {
-            throw new DomainException("La promocion {$this->promocionId} esta CANCELADA, no se puede usar");
+            throw new ConflictoDeEstado("La promocion {$this->promocionId} esta CANCELADA, no se puede usar");
         }
 
         if (! $this->tieneUsosDisponibles()) {
-            throw new DomainException(
+            throw new ConflictoDeEstado(
                 "La promocion {$this->promocionId} alcanzo su tope de usos ({$this->maxUsos})",
             );
         }
 
-        ++$this->usosActuales;
+        $this->usosActuales++;
 
         $this->registrar(new PromocionAplicada(
             promocionId: $this->promocionId,
@@ -247,15 +247,15 @@ final class Promocion
     public function vencer(DateTimeImmutable $fecha): void
     {
         if ($this->estado->esTerminal()) {
-            throw new DomainException(
+            throw new ConflictoDeEstado(
                 "La promocion {$this->promocionId} ya esta {$this->estado->value}",
             );
         }
 
         if ($fecha <= $this->vigenteHasta) {
-            throw new DomainException(
+            throw new ConflictoDeEstado(
                 "La promocion {$this->promocionId} sigue vigente hasta "
-                . $this->vigenteHasta->format('Y-m-d H:i:s'),
+                .$this->vigenteHasta->format('Y-m-d H:i:s'),
             );
         }
 
@@ -265,7 +265,7 @@ final class Promocion
     public function activar(): void
     {
         if ($this->estado !== EstadoPromocion::BORRADOR && $this->estado !== EstadoPromocion::PAUSADA) {
-            throw new DomainException(
+            throw new ConflictoDeEstado(
                 "La promocion {$this->promocionId} esta {$this->estado->value} y no se puede activar",
             );
         }
@@ -276,7 +276,7 @@ final class Promocion
     public function pausar(): void
     {
         if ($this->estado !== EstadoPromocion::ACTIVA) {
-            throw new DomainException(
+            throw new ConflictoDeEstado(
                 "La promocion {$this->promocionId} esta {$this->estado->value} y no se puede pausar",
             );
         }
@@ -287,7 +287,7 @@ final class Promocion
     public function cancelar(): void
     {
         if ($this->estado->esTerminal()) {
-            throw new DomainException(
+            throw new ConflictoDeEstado(
                 "La promocion {$this->promocionId} ya esta {$this->estado->value}",
             );
         }
@@ -344,7 +344,7 @@ final class Promocion
      * significa "todos los del anfitrion" (o de la plataforma si no tiene
      * anfitrion).
      *
-     * @param list<string> $alojamientos
+     * @param  list<string>  $alojamientos
      */
     public function asignarAlojamientos(array $alojamientos): void
     {
@@ -402,11 +402,11 @@ final class Promocion
         $limpio = strtoupper(trim($codigo));
 
         if ($limpio === '') {
-            throw new DomainException('El codigo de cupon no puede estar vacio');
+            throw new ReglaDeNegocioViolada('El codigo de cupon no puede estar vacio');
         }
 
         if (mb_strlen($limpio) > 30) {
-            throw new DomainException("El codigo de cupon no puede pasar de 30 caracteres: {$codigo}");
+            throw new ReglaDeNegocioViolada("El codigo de cupon no puede pasar de 30 caracteres: {$codigo}");
         }
 
         return $limpio;
@@ -514,7 +514,7 @@ final class Promocion
         }
 
         if (! $this->estaVigenteEn($fecha)) {
-            return "La promocion {$this->promocionId} no esta vigente el " . $fecha->format('Y-m-d');
+            return "La promocion {$this->promocionId} no esta vigente el ".$fecha->format('Y-m-d');
         }
 
         if (! $this->tieneUsosDisponibles()) {
@@ -539,7 +539,7 @@ final class Promocion
     private function asegurarEditable(): void
     {
         if ($this->estado->esTerminal()) {
-            throw new DomainException(
+            throw new ConflictoDeEstado(
                 "La promocion {$this->promocionId} esta {$this->estado->value} y ya no se edita",
             );
         }
@@ -550,7 +550,7 @@ final class Promocion
         $limpio = trim($nombre);
 
         if ($limpio === '') {
-            throw new DomainException('La promocion necesita un nombre');
+            throw new ReglaDeNegocioViolada('La promocion necesita un nombre');
         }
 
         return $limpio;
@@ -562,15 +562,15 @@ final class Promocion
         $limpio = trim($valor);
 
         if (preg_match('/^\d+(\.\d{1,2})?$/', $limpio) !== 1) {
-            throw new DomainException("Valor de promocion invalido: {$valor}");
+            throw new ReglaDeNegocioViolada("Valor de promocion invalido: {$valor}");
         }
 
         if ((float) $limpio <= 0) {
-            throw new DomainException('El valor de la promocion debe ser mayor que cero');
+            throw new ReglaDeNegocioViolada('El valor de la promocion debe ser mayor que cero');
         }
 
         if ($tipoDescuento === TipoDescuento::PORCENTAJE && (float) $limpio > 100) {
-            throw new DomainException("Un descuento porcentual no puede pasar de 100 %, recibido {$valor}");
+            throw new ReglaDeNegocioViolada("Un descuento porcentual no puede pasar de 100 %, recibido {$valor}");
         }
 
         return $limpio;
@@ -579,7 +579,7 @@ final class Promocion
     private static function validarMinNoches(int $minNoches): int
     {
         if ($minNoches < 1) {
-            throw new DomainException("Las noches minimas deben ser al menos 1, recibido {$minNoches}");
+            throw new ReglaDeNegocioViolada("Las noches minimas deben ser al menos 1, recibido {$minNoches}");
         }
 
         return $minNoches;
@@ -592,11 +592,11 @@ final class Promocion
         }
 
         if ($maxUsos < 1) {
-            throw new DomainException("El tope de usos debe ser al menos 1, recibido {$maxUsos}");
+            throw new ReglaDeNegocioViolada("El tope de usos debe ser al menos 1, recibido {$maxUsos}");
         }
 
         if ($maxUsos < $usosActuales) {
-            throw new DomainException(
+            throw new ReglaDeNegocioViolada(
                 "El tope de usos ({$maxUsos}) no puede ser menor que los {$usosActuales} usos ya registrados",
             );
         }
@@ -607,12 +607,12 @@ final class Promocion
     private static function validarVigencia(DateTimeImmutable $desde, DateTimeImmutable $hasta): void
     {
         if ($hasta <= $desde) {
-            throw new DomainException('La vigencia de la promocion debe terminar despues de empezar');
+            throw new ReglaDeNegocioViolada('La vigencia de la promocion debe terminar despues de empezar');
         }
     }
 
     /**
-     * @param list<string> $alojamientos
+     * @param  list<string>  $alojamientos
      * @return list<string>
      */
     private static function normalizarAlojamientos(array $alojamientos): array
@@ -623,7 +623,7 @@ final class Promocion
             $id = trim($alojamientoId);
 
             if ($id === '') {
-                throw new DomainException('El id de alojamiento no puede estar vacio');
+                throw new ReglaDeNegocioViolada('El id de alojamiento no puede estar vacio');
             }
 
             if (! in_array($id, $limpios, true)) {

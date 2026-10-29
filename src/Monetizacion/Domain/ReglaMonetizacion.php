@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Src\Monetizacion\Domain;
 
 use DateTimeImmutable;
-use DomainException;
+use Src\Shared\Domain\Exception\ReglaDeNegocioViolada;
 use Src\Shared\Domain\Money;
 
 /**
@@ -31,8 +31,7 @@ final class ReglaMonetizacion
         private ?DateTimeImmutable $vigenteHasta,
         private EstadoRegla $estado,
         private readonly string $creadoPor,
-    ) {
-    }
+    ) {}
 
     public static function porPorcentaje(
         string $reglaId,
@@ -78,7 +77,7 @@ final class ReglaMonetizacion
         ?string $nivelAnfitrion = null,
     ): self {
         if ($montoFijo->esNegativo()) {
-            throw new DomainException('El monto fijo no puede ser negativo');
+            throw new ReglaDeNegocioViolada('El monto fijo no puede ser negativo');
         }
 
         self::validarVigencia($vigenteDesde, $vigenteHasta);
@@ -140,7 +139,7 @@ final class ReglaMonetizacion
     public function calcular(Money $base): Money
     {
         if ($base->esNegativo()) {
-            throw new DomainException('La base de calculo no puede ser negativa');
+            throw new ReglaDeNegocioViolada('La base de calculo no puede ser negativa');
         }
 
         if ($this->tipoCalculo === TipoCalculo::PORCENTAJE) {
@@ -150,11 +149,11 @@ final class ReglaMonetizacion
         $monto = $this->montoFijo;
 
         if ($monto === null) {
-            throw new DomainException("La regla {$this->reglaId} es MONTO_FIJO y no tiene monto");
+            throw new ReglaDeNegocioViolada("La regla {$this->reglaId} es MONTO_FIJO y no tiene monto");
         }
 
         if ($monto->moneda() !== $base->moneda()) {
-            throw new DomainException(
+            throw new ReglaDeNegocioViolada(
                 "La regla {$this->reglaId} esta en {$monto->moneda()} y la base en {$base->moneda()}",
             );
         }
@@ -197,7 +196,7 @@ final class ReglaMonetizacion
     public function cambiarPorcentaje(string $porcentaje): void
     {
         if ($this->tipoCalculo !== TipoCalculo::PORCENTAJE) {
-            throw new DomainException("La regla {$this->reglaId} no se calcula por porcentaje");
+            throw new ReglaDeNegocioViolada("La regla {$this->reglaId} no se calcula por porcentaje");
         }
 
         self::validarPorcentaje($porcentaje);
@@ -207,11 +206,11 @@ final class ReglaMonetizacion
     public function cambiarMontoFijo(Money $monto): void
     {
         if ($this->tipoCalculo !== TipoCalculo::MONTO_FIJO) {
-            throw new DomainException("La regla {$this->reglaId} no se calcula por monto fijo");
+            throw new ReglaDeNegocioViolada("La regla {$this->reglaId} no se calcula por monto fijo");
         }
 
         if ($monto->esNegativo()) {
-            throw new DomainException('El monto fijo no puede ser negativo');
+            throw new ReglaDeNegocioViolada('El monto fijo no puede ser negativo');
         }
 
         $this->montoFijo = $monto;
@@ -309,7 +308,7 @@ final class ReglaMonetizacion
         $limpio = trim($nombre);
 
         if ($limpio === '') {
-            throw new DomainException('La regla necesita un nombre');
+            throw new ReglaDeNegocioViolada('La regla necesita un nombre');
         }
 
         return $limpio;
@@ -318,25 +317,25 @@ final class ReglaMonetizacion
     private static function validarPorcentaje(string $porcentaje): void
     {
         if (! is_numeric($porcentaje)) {
-            throw new DomainException("Porcentaje invalido: {$porcentaje}");
+            throw new ReglaDeNegocioViolada("Porcentaje invalido: {$porcentaje}");
         }
 
         $valor = (float) $porcentaje;
 
         if ($valor < 0 || $valor > 100) {
-            throw new DomainException("El porcentaje debe estar entre 0 y 100, recibido {$porcentaje}");
+            throw new ReglaDeNegocioViolada("El porcentaje debe estar entre 0 y 100, recibido {$porcentaje}");
         }
     }
 
     private static function validarVigencia(DateTimeImmutable $desde, ?DateTimeImmutable $hasta): void
     {
         if ($hasta !== null && self::soloFecha($hasta) < self::soloFecha($desde)) {
-            throw new DomainException('La vigencia no puede terminar antes de empezar');
+            throw new ReglaDeNegocioViolada('La vigencia no puede terminar antes de empezar');
         }
     }
 
     private static function soloFecha(DateTimeImmutable $fecha): DateTimeImmutable
     {
-        return new DateTimeImmutable($fecha->format('Y-m-d') . ' 00:00:00');
+        return new DateTimeImmutable($fecha->format('Y-m-d').' 00:00:00');
     }
 }

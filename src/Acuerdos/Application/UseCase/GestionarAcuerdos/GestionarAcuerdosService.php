@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Src\Acuerdos\Application\UseCase\GestionarAcuerdos;
 
-use DomainException;
 use Src\Acuerdos\Domain\AcuerdoComercial;
 use Src\Acuerdos\Domain\AcuerdoComercialRepository;
 use Src\Acuerdos\Domain\EstadoAcuerdo;
 use Src\Shared\Application\Port\AuditLogger;
 use Src\Shared\Application\Port\UuidGenerator;
+use Src\Shared\Domain\Exception\RecursoNoEncontrado;
 
 /**
  * CU-ACU-01 GestionarAcuerdos (CRUD, disparador REST).
@@ -27,8 +27,7 @@ final class GestionarAcuerdosService
         private readonly AcuerdoComercialRepository $acuerdos,
         private readonly UuidGenerator $uuid,
         private readonly AuditLogger $auditoria,
-    ) {
-    }
+    ) {}
 
     /** Todo acuerdo nace en BORRADOR; activarlo es CU-ACU-02. */
     public function crear(CrearAcuerdoBorradorCommand $comando): AcuerdoComercial
@@ -106,7 +105,7 @@ final class GestionarAcuerdosService
     private function obligatorio(string $acuerdoId): AcuerdoComercial
     {
         return $this->acuerdos->buscar($acuerdoId)
-            ?? throw new DomainException("El acuerdo {$acuerdoId} no existe");
+            ?? throw new RecursoNoEncontrado("El acuerdo {$acuerdoId} no existe");
     }
 
     /** @return array<string, mixed> */

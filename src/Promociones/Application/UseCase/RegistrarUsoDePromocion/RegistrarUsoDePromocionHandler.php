@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Src\Promociones\Application\UseCase\RegistrarUsoDePromocion;
 
-use DomainException;
 use Src\Promociones\Domain\Promocion;
 use Src\Promociones\Domain\PromocionRepository;
 use Src\Shared\Application\Port\Clock;
 use Src\Shared\Application\Port\EventPublisher;
 use Src\Shared\Application\Port\TransactionManager;
+use Src\Shared\Domain\Exception\RecursoNoEncontrado;
 use Src\Shared\Domain\Money;
 
 /**
@@ -30,14 +30,13 @@ final class RegistrarUsoDePromocionHandler
         private readonly EventPublisher $eventos,
         private readonly TransactionManager $transacciones,
         private readonly Clock $clock,
-    ) {
-    }
+    ) {}
 
     public function __invoke(RegistrarUsoDePromocionCommand $comando): Promocion
     {
         return $this->transacciones->ejecutar(function () use ($comando): Promocion {
             $promocion = $this->promociones->buscar($comando->promocionId)
-                ?? throw new DomainException("La promocion {$comando->promocionId} no existe");
+                ?? throw new RecursoNoEncontrado("La promocion {$comando->promocionId} no existe");
 
             $promocion->registrarUso(
                 $comando->aplicadaEn ?? $this->clock->ahora(),

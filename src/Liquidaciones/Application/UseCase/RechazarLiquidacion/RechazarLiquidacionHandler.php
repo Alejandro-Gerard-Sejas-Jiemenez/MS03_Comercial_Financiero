@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Src\Liquidaciones\Application\UseCase\RechazarLiquidacion;
 
-use DomainException;
 use Src\Liquidaciones\Domain\ComisionRepository;
 use Src\Liquidaciones\Domain\Liquidacion;
 use Src\Liquidaciones\Domain\LiquidacionRepository;
 use Src\Shared\Application\Port\AuditLogger;
 use Src\Shared\Application\Port\TransactionManager;
+use Src\Shared\Domain\Exception\RecursoNoEncontrado;
 
 /**
  * CU-LIQ-06 RechazarLiquidacion (NEG, REST).
@@ -28,13 +28,12 @@ final class RechazarLiquidacionHandler
         private readonly ComisionRepository $comisiones,
         private readonly AuditLogger $auditoria,
         private readonly TransactionManager $tx,
-    ) {
-    }
+    ) {}
 
     public function __invoke(RechazarLiquidacionCommand $comando): Liquidacion
     {
         $liquidacion = $this->liquidaciones->buscar($comando->liquidacionId)
-            ?? throw new DomainException("La liquidacion {$comando->liquidacionId} no existe");
+            ?? throw new RecursoNoEncontrado("La liquidacion {$comando->liquidacionId} no existe");
 
         $estadoAnterior = $liquidacion->estado()->value;
 

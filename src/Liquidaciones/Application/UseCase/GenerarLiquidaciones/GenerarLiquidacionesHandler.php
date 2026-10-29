@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Src\Liquidaciones\Application\UseCase\GenerarLiquidaciones;
 
 use DateTimeImmutable;
-use DomainException;
 use Src\Acuerdos\Application\Port\MetodoCobroQuery;
 use Src\Liquidaciones\Domain\Comision;
 use Src\Liquidaciones\Domain\ComisionRepository;
@@ -16,6 +15,7 @@ use Src\Referencias\Domain\AnfitrionReferenceRepository;
 use Src\Shared\Application\Port\Clock;
 use Src\Shared\Application\Port\TransactionManager;
 use Src\Shared\Application\Port\UuidGenerator;
+use Src\Shared\Domain\Exception\ConflictoDeEstado;
 use Src\Shared\Domain\Money;
 
 /**
@@ -42,8 +42,7 @@ final class GenerarLiquidacionesHandler
         private readonly UuidGenerator $uuid,
         private readonly Clock $clock,
         private readonly TransactionManager $tx,
-    ) {
-    }
+    ) {}
 
     /** @return list<Liquidacion> */
     public function __invoke(GenerarLiquidacionesCommand $comando): array
@@ -90,9 +89,9 @@ final class GenerarLiquidacionesHandler
         $neto = $bruto->menos($comisiones)->menos($reembolsos);
 
         if ($neto->esNegativo()) {
-            throw new DomainException(
+            throw new ConflictoDeEstado(
                 "El anfitrion {$anfitrion->anfitrionId} tiene un ajuste por reembolsos "
-                . "({$reembolsos->aDecimal()}) mayor que su neto del periodo; revisar a mano",
+                ."({$reembolsos->aDecimal()}) mayor que su neto del periodo; revisar a mano",
             );
         }
 

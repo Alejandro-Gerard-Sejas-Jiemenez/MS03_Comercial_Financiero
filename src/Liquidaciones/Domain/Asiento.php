@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Src\Liquidaciones\Domain;
 
-use DomainException;
+use Src\Shared\Domain\Exception\ConflictoDeEstado;
+use Src\Shared\Domain\Exception\RecursoNoEncontrado;
+use Src\Shared\Domain\Exception\ReglaDeNegocioViolada;
 use Src\Shared\Domain\Money;
 
 /**
@@ -20,14 +22,13 @@ final class Asiento
     private function __construct(
         private readonly string $asientoId,
         private readonly array $movimientos,
-    ) {
-    }
+    ) {}
 
     /** @param list<MovimientoContable> $movimientos */
     public static function de(string $asientoId, array $movimientos): self
     {
         if ($movimientos === []) {
-            throw new DomainException('Un asiento sin movimientos no existe');
+            throw new RecursoNoEncontrado('Un asiento sin movimientos no existe');
         }
 
         $moneda = $movimientos[0]->monto->moneda();
@@ -36,7 +37,7 @@ final class Asiento
 
         foreach ($movimientos as $movimiento) {
             if ($movimiento->asientoId !== $asientoId) {
-                throw new DomainException(
+                throw new ConflictoDeEstado(
                     "El movimiento de la cuenta {$movimiento->cuenta->value} pertenece a otro asiento",
                 );
             }
@@ -49,9 +50,9 @@ final class Asiento
         }
 
         if (! $debitos->igualA($creditos)) {
-            throw new DomainException(
+            throw new ReglaDeNegocioViolada(
                 "Asiento desbalanceado: debitos {$debitos->aDecimal()} contra creditos "
-                . "{$creditos->aDecimal()}",
+                ."{$creditos->aDecimal()}",
             );
         }
 

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Src\Pagos\Application\UseCase\SolicitarReembolso;
 
-use DomainException;
 use Src\Pagos\Domain\PagoRepository;
 use Src\Pagos\Domain\PoliticaDeReembolso;
 use Src\Pagos\Domain\Reembolso;
@@ -13,6 +12,8 @@ use Src\Referencias\Domain\ReservaReferenceRepository;
 use Src\Shared\Application\Port\Clock;
 use Src\Shared\Application\Port\TransactionManager;
 use Src\Shared\Application\Port\UuidGenerator;
+use Src\Shared\Domain\Exception\ConflictoDeEstado;
+use Src\Shared\Domain\Exception\RecursoNoEncontrado;
 
 /**
  * CU-PAG-07 SolicitarReembolso (NEG, EVT `reserva.cancelada`).
@@ -37,24 +38,23 @@ final class SolicitarReembolsoHandler
         private readonly UuidGenerator $uuid,
         private readonly Clock $clock,
         private readonly TransactionManager $tx,
-    ) {
-    }
+    ) {}
 
     public function __invoke(SolicitarReembolsoCommand $comando): ?Reembolso
     {
         $pago = $this->pagos->buscarVivoPorReserva($comando->reservaId)
-            ?? throw new DomainException(
+            ?? throw new RecursoNoEncontrado(
                 "La reserva {$comando->reservaId} no tiene un pago vivo que reembolsar",
             );
 
         if (! $pago->admiteReembolso()) {
-            throw new DomainException(
+            throw new ConflictoDeEstado(
                 "El pago {$pago->pagoId()} esta en estado {$pago->estado()->value} y no admite reembolso",
             );
         }
 
         $reserva = $this->reservas->buscar($comando->reservaId)
-            ?? throw new DomainException(
+            ?? throw new RecursoNoEncontrado(
                 "No hay copia local de la reserva {$comando->reservaId}; falta el evento de MS-02",
             );
 

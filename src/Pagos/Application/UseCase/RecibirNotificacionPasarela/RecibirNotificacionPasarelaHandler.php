@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Src\Pagos\Application\UseCase\RecibirNotificacionPasarela;
 
-use DomainException;
 use Src\Pagos\Domain\EstadoTransaccion;
 use Src\Pagos\Domain\PagoRepository;
 use Src\Pagos\Domain\TipoTransaccion;
@@ -13,6 +12,7 @@ use Src\Pagos\Domain\TransaccionPagoRepository;
 use Src\Shared\Application\Port\EventPublisher;
 use Src\Shared\Application\Port\TransactionManager;
 use Src\Shared\Application\Port\UuidGenerator;
+use Src\Shared\Domain\Exception\RecursoNoEncontrado;
 
 /**
  * CU-PAG-05 RecibirNotificacionPasarela (NEG, webhook REST).
@@ -33,8 +33,7 @@ final class RecibirNotificacionPasarelaHandler
         private readonly EventPublisher $eventos,
         private readonly TransactionManager $tx,
         private readonly UuidGenerator $uuid,
-    ) {
-    }
+    ) {}
 
     public function __invoke(RecibirNotificacionPasarelaCommand $comando): ResultadoNotificacion
     {
@@ -43,7 +42,7 @@ final class RecibirNotificacionPasarelaHandler
         }
 
         $pago = $this->pagos->buscar($comando->pagoId)
-            ?? throw new DomainException("El pago {$comando->pagoId} no existe");
+            ?? throw new RecursoNoEncontrado("El pago {$comando->pagoId} no existe");
 
         // Un pago ya cerrado no cambia de estado por un webhook atrasado, pero
         // la transaccion si se registra: el libro con la pasarela es append-only

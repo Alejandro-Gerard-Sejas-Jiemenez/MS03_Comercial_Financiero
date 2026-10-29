@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Src\Monetizacion\Application\UseCase\CalcularDesgloseComercial;
 
-use DomainException;
 use Src\Monetizacion\Domain\CalculadoraComision;
 use Src\Monetizacion\Domain\Concepto;
 use Src\Monetizacion\Domain\DesgloseComercial;
 use Src\Monetizacion\Domain\ReglaMonetizacion;
 use Src\Monetizacion\Domain\ReglaMonetizacionRepository;
 use Src\Shared\Application\Port\Clock;
+use Src\Shared\Domain\Exception\RecursoNoEncontrado;
 use Src\Shared\Domain\Money;
 
 /**
@@ -26,8 +26,7 @@ final class CalcularDesgloseComercialHandler
         private readonly ReglaMonetizacionRepository $reglas,
         private readonly CalculadoraComision $calculadora,
         private readonly Clock $clock,
-    ) {
-    }
+    ) {}
 
     public function __invoke(CalcularDesgloseComercialCommand $comando): DesgloseComercial
     {
@@ -53,7 +52,7 @@ final class CalcularDesgloseComercialHandler
         $negociada = $this->reglas->buscar($comando->reglaComisionNegociadaId);
 
         if ($negociada === null) {
-            throw new DomainException(
+            throw new RecursoNoEncontrado(
                 "La regla negociada {$comando->reglaComisionNegociadaId} no existe",
             );
         }

@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Src\Pagos\Domain;
 
 use DateTimeImmutable;
-use DomainException;
+use Src\Shared\Domain\Exception\ConflictoDeEstado;
+use Src\Shared\Domain\Exception\ReglaDeNegocioViolada;
 use Src\Shared\Domain\Money;
 
 /**
@@ -33,12 +34,11 @@ final class Conciliacion
         private EstadoConciliacion $estado,
         private readonly ?string $ejecutadaPor,
         private array $items,
-    ) {
-    }
+    ) {}
 
     /**
-     * @param list<TransaccionPago> $transaccionesDelSistema transacciones EXITOSAS del corte
-     * @param list<MovimientoPasarela> $reporteDeLaPasarela lineas del reporte externo
+     * @param  list<TransaccionPago>  $transaccionesDelSistema  transacciones EXITOSAS del corte
+     * @param  list<MovimientoPasarela>  $reporteDeLaPasarela  lineas del reporte externo
      */
     public static function ejecutar(
         string $conciliacionId,
@@ -53,7 +53,7 @@ final class Conciliacion
 
         foreach ($transaccionesDelSistema as $transaccion) {
             if ($transaccion->referenciaPasarela === null) {
-                throw new DomainException(
+                throw new ReglaDeNegocioViolada(
                     "La transaccion {$transaccion->transaccionId} no tiene referencia de pasarela y no se puede conciliar",
                 );
             }
@@ -168,7 +168,7 @@ final class Conciliacion
         ?string $transaccionId = null,
     ): void {
         if (trim($observacion) === '') {
-            throw new DomainException('La revision necesita una observacion');
+            throw new ReglaDeNegocioViolada('La revision necesita una observacion');
         }
 
         foreach ($this->items as $item) {
@@ -179,7 +179,7 @@ final class Conciliacion
             }
         }
 
-        throw new DomainException(
+        throw new ConflictoDeEstado(
             "La referencia {$referenciaPasarela} no pertenece a esta conciliacion",
         );
     }
@@ -192,7 +192,7 @@ final class Conciliacion
     {
         foreach ($this->items as $item) {
             if ($item->resultado() !== ResultadoConciliacionItem::COINCIDE && ! $item->estaRevisado()) {
-                throw new DomainException(
+                throw new ConflictoDeEstado(
                     "La referencia {$item->referenciaPasarela()} tiene diferencia y no esta revisada",
                 );
             }

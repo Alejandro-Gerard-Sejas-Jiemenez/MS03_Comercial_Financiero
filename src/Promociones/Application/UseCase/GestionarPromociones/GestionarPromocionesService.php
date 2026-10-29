@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace Src\Promociones\Application\UseCase\GestionarPromociones;
 
-use DomainException;
 use Src\Promociones\Domain\EstadoPromocion;
 use Src\Promociones\Domain\Promocion;
 use Src\Promociones\Domain\PromocionRepository;
 use Src\Promociones\Domain\TipoPromocion;
 use Src\Shared\Application\Port\AuditLogger;
 use Src\Shared\Application\Port\UuidGenerator;
+use Src\Shared\Domain\Exception\ConflictoDeEstado;
+use Src\Shared\Domain\Exception\RecursoNoEncontrado;
+use Src\Shared\Domain\Exception\ReglaDeNegocioViolada;
 
 /**
  * CU-PRO-01 GestionarPromociones (CRUD, disparador REST).
@@ -29,8 +31,7 @@ final class GestionarPromocionesService
         private readonly PromocionRepository $promociones,
         private readonly UuidGenerator $uuid,
         private readonly AuditLogger $auditoria,
-    ) {
-    }
+    ) {}
 
     public function crear(CrearPromocionCommand $comando): Promocion
     {
@@ -38,7 +39,7 @@ final class GestionarPromocionesService
             $codigo = Promocion::normalizarCodigo($comando->codigo);
 
             if ($this->promociones->buscarPorCodigo($codigo) !== null) {
-                throw new DomainException("Ya existe una promocion con el cupon {$codigo}");
+                throw new ConflictoDeEstado("Ya existe una promocion con el cupon {$codigo}");
             }
         }
 
@@ -182,7 +183,7 @@ final class GestionarPromocionesService
             'ACTIVAR_PROMOCION' => $promocion->activar(),
             'PAUSAR_PROMOCION' => $promocion->pausar(),
             'CANCELAR_PROMOCION' => $promocion->cancelar(),
-            default => throw new DomainException("Accion de estado desconocida: {$accion}"),
+            default => throw new ReglaDeNegocioViolada("Accion de estado desconocida: {$accion}"),
         };
 
         $this->promociones->guardar($promocion);
@@ -201,7 +202,7 @@ final class GestionarPromocionesService
     private function obligatoria(string $promocionId): Promocion
     {
         return $this->promociones->buscar($promocionId)
-            ?? throw new DomainException("La promocion {$promocionId} no existe");
+            ?? throw new RecursoNoEncontrado("La promocion {$promocionId} no existe");
     }
 
     /** @return array<string, mixed> */

@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Src\Pagos\Domain;
 
-use DomainException;
 use Src\Pagos\Domain\Event\ReembolsoProcesado;
+use Src\Shared\Domain\Exception\ConflictoDeEstado;
+use Src\Shared\Domain\Exception\ReglaDeNegocioViolada;
 use Src\Shared\Domain\Money;
 use Src\Shared\Domain\RegistraEventos;
 
@@ -29,8 +30,7 @@ final class Reembolso
         private ?string $detalle,
         private readonly ?string $solicitadoPor,
         private ?string $transaccionId,
-    ) {
-    }
+    ) {}
 
     public static function solicitar(
         string $reembolsoId,
@@ -41,7 +41,7 @@ final class Reembolso
         ?string $solicitadoPor = null,
     ): self {
         if (! $monto->esPositivo()) {
-            throw new DomainException('Un reembolso debe tener monto positivo');
+            throw new ReglaDeNegocioViolada('Un reembolso debe tener monto positivo');
         }
 
         return new self(
@@ -81,7 +81,7 @@ final class Reembolso
     public function aprobar(?string $detalle = null): void
     {
         if ($this->estado !== EstadoReembolso::SOLICITADO) {
-            throw new DomainException(
+            throw new ConflictoDeEstado(
                 "Solo se aprueba un reembolso SOLICITADO, no uno {$this->estado->value}",
             );
         }
@@ -96,13 +96,13 @@ final class Reembolso
     public function rechazar(string $detalle): void
     {
         if ($this->estado !== EstadoReembolso::SOLICITADO) {
-            throw new DomainException(
+            throw new ConflictoDeEstado(
                 "Solo se rechaza un reembolso SOLICITADO, no uno {$this->estado->value}",
             );
         }
 
         if (trim($detalle) === '') {
-            throw new DomainException('Un rechazo necesita explicacion');
+            throw new ReglaDeNegocioViolada('Un rechazo necesita explicacion');
         }
 
         $this->estado = EstadoReembolso::RECHAZADO;
@@ -123,7 +123,7 @@ final class Reembolso
         ?string $sagaId = null,
     ): void {
         if ($this->estado !== EstadoReembolso::APROBADO) {
-            throw new DomainException(
+            throw new ConflictoDeEstado(
                 "Solo se procesa un reembolso APROBADO, no uno {$this->estado->value}",
             );
         }
