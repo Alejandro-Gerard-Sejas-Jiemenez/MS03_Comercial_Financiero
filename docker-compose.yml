@@ -19,6 +19,14 @@ services:
       timeout: 5s
       retries: 10
 
+  # Broker de eventos (COMERCIAL_BROKER_DRIVER=rabbitmq). Consola en http://localhost:15672 (guest/guest).
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: ms03-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
   # Solo para desarrollo: emite los JWT que MS-03 valida (KEYCLOAK_* en .env).
   # Crear el realm `alojate`, el cliente `ms03-comercial-financiero` y los
   # roles ADMIN, ANFITRION y CLIENTE desde http://localhost:8080 (admin/admin).
@@ -32,8 +40,6 @@ services:
     ports:
       - "8080:8080"
 
-# RabbitMQ se agrega junto con la capa de Presentacion (consumidores y relay del
-# Outbox); hoy el puerto MessageBroker usa la implementacion de log.
 
 volumes:
   ms03_pgdata:

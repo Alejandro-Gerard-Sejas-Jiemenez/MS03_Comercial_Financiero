@@ -8,6 +8,15 @@ use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\ServiceProvider;
+use PhpAmqpLib\Connection\AMQPConnectionConfig;
+use PhpAmqpLib\Connection\AMQPConnectionFactory;
+use Src\Liquidaciones\Presentation\Messaging\LiquidacionesSuscriptor;
+use Src\Pagos\Presentation\Messaging\PagosSuscriptor;
+use Src\Promociones\Presentation\Messaging\PromocionesSuscriptor;
+use Src\Referencias\Presentation\Messaging\ReferenciasSuscriptor;
+use Src\Shared\Infrastructure\Messaging\RabbitMqMessageBroker;
+use Src\Shared\Presentation\Console\ConsumirMensajesCommand;
+use Src\Shared\Presentation\Messaging\ConsumidorDeEventos;
 use Src\Acuerdos\Application\Port\AcuerdoComercialQuery;
 use Src\Acuerdos\Application\Port\CifradorDeDatos;
 use Src\Acuerdos\Application\Port\MetodoCobroQuery;
@@ -152,6 +161,7 @@ final class ComercialServiceProvider extends ServiceProvider
         $this->registrarBroker();
         $this->registrarPasarela();
         $this->registrarAutenticador();
+        $this->registrarConsumidor();
     }
 
     public function boot(Router $router): void
@@ -160,6 +170,7 @@ final class ComercialServiceProvider extends ServiceProvider
             $this->commands([
                 PublicarOutboxCommand::class,
                 GenerarOpenApiCommand::class,
+                ConsumirMensajesCommand::class,
                 VencerPromocionesCommand::class,
                 GenerarLiquidacionesCommand::class,
                 EjecutarConciliacionCommand::class,
@@ -209,10 +220,44 @@ final class ComercialServiceProvider extends ServiceProvider
      */
     private function registrarBroker(): void
     {
+        $this->app->singleton(MessageBroker::class, static function (): MessageBroker {
+            if (config('comercial.broker.driver') === 'rabbitmq') {
+                $c = (array) config('comercial.rabbitmq');
+
+                return new RabbitMqMessageBroker(
+                    static fn () => AMQPConnectionFactory::create(
+                        (new AMQPConnectionConfig)
+                            ->setHost((string) $c['host'])
+                            ->setPort((int) $c['port'])
+                            ->setUser((string) $c['usuario'])
+                            ->setPassword((string) $c['password'])
+                            ->setIsLazy(true),
+                    )->channel(),
+                    (string) $c['exchange'],
+                );
+            }
+
+            return new LogMessageBroker((string) config('comercial.outbox.canal_log', 'stack'));
+        });
+    }
+
+    /**
+     * Quien reacciona a cada evento. El orden importa: Referencias sincroniza
+     * la reserva antes de que Pagos calcule un reembolso con sus fechas.
+     */
+    private function registrarConsumidor(): void
+    {
         $this->app->singleton(
-            MessageBroker::class,
-            static fn (): MessageBroker => new LogMessageBroker(
-                (string) config('comercial.outbox.canal_log', 'stack'),
+            ConsumidorDeEventos::class,
+            static fn ($app): ConsumidorDeEventos => new ConsumidorDeEventos(
+                array_map($app->make(...), [
+                    ReferenciasSuscriptor::class,
+                    PagosSuscriptor::class,
+                    PromocionesSuscriptor::class,
+                    LiquidacionesSuscriptor::class,
+                ]),
+                $app->make(InboxRegistry::class),
+                $app->make(TransactionManager::class),
             ),
         );
     }

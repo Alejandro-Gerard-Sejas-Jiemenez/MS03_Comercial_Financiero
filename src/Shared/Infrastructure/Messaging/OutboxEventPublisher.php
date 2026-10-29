@@ -15,9 +15,7 @@ use Src\Shared\Domain\OutboxRepository;
  */
 final class OutboxEventPublisher implements EventPublisher
 {
-    public function __construct(private readonly OutboxRepository $outbox)
-    {
-    }
+    public function __construct(private readonly OutboxRepository $outbox) {}
 
     public function publicar(array $eventos): void
     {

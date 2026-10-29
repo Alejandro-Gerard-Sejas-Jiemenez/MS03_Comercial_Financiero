@@ -29,8 +29,12 @@ return [
         'canal_log' => env('COMERCIAL_OUTBOX_CANAL_LOG', 'stack'),
     ],
 
+    'broker' => [
+        // 'log' deja los eventos en el log (desarrollo); 'rabbitmq' los publica de verdad.
+        'driver' => env('COMERCIAL_BROKER_DRIVER', 'log'),
+    ],
+
     'rabbitmq' => [
-        // Pendiente: se usa cuando exista la capa Presentation/Messaging.
         'host' => env('RABBITMQ_HOST', '127.0.0.1'),
         'port' => (int) env('RABBITMQ_PORT', 5672),
         'usuario' => env('RABBITMQ_USER', 'guest'),

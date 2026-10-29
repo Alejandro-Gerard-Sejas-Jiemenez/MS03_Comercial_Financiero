@@ -16,9 +16,7 @@ use Src\Shared\Application\Port\MessageBroker;
  */
 final class LogMessageBroker implements MessageBroker
 {
-    public function __construct(private readonly string $canal = 'stack')
-    {
-    }
+    public function __construct(private readonly string $canal = 'stack') {}
 
     public function enviar(string $routingKey, array $mensaje): void
     {

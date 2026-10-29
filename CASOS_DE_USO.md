@@ -629,7 +629,7 @@ Todos salen por Outbox, dentro de la transacción del caso de uso que los emite.
 | `acuerdo_comercial.activado` · `.suspendido` · `.finalizado` | CU-ACU-02 | MS-01 (habilita o bloquea publicaciones) |
 | `liquidacion.pagada` | CU-LIQ-07 | MS-01 (avisa al anfitrión) |
 
-Eventos que MS-03 **consume** (los adaptadores están pendientes, ver sección 10): `reserva.confirmada`, `reserva.actualizada`, `reserva.cancelada`, `estadia.completada` de MS-02; `anfitrion.verificado`, `anfitrion.suspendido` de MS-01.
+Eventos que MS-03 **consume** (adaptadores en `src/*/Presentation/Messaging`): `reserva.confirmada`, `reserva.actualizada`, `reserva.cancelada`, `estadia.completada` de MS-02; `anfitrion.verificado`, `anfitrion.suspendido` de MS-01.
 
 Los nombres de eventos y endpoints son la propuesta del documento de arquitectura y **hay que acordarlos con los otros equipos** (decisión pendiente #6 de ese documento).
 
@@ -642,7 +642,7 @@ Los nombres de eventos y endpoints son la propuesta del documento de arquitectur
 La base de Presentation (P1) existe: JWT de Keycloak, idempotencia, errores y `/api/v1/salud`. Falta, por paquete:
 
 - ~~`Presentation/Http`~~ **Hecho (P2)**: 54 rutas bajo `/api/v1` en `src/<Paquete>/Presentation/Http/routes.php`; JWT de Keycloak, roles `ADMIN`/`ANFITRION`/`CLIENTE`, `Idempotency-Key` en pago, cobro y reembolso. Los casos EVT (`RegistrarComision`, `RevertirComision`, `MarcarComisionesLiquidables`, `RetenerLiquidacionesDeAnfitrion`, `RegistrarUsoDePromocion`, `SincronizarAnfitrion`, `SincronizarReserva`) no tienen ruta REST a proposito.
-- `Presentation/Messaging`: consumidores de RabbitMQ para los disparadores `EVT`, que antes de procesar deben descartar los mensajes repetidos con el `InboxRegistry`.
+- ~~`Presentation/Messaging`~~ **Hecho (P4)**: `php artisan mensajeria:consumir`; cada mensaje pasa por el Inbox antes de ejecutar el caso de uso. Formas de `data` propuestas en `src/*/Presentation/Messaging/*Suscriptor.php`.
 - ~~Comandos de Artisan y Scheduler~~ **Hecho (P2)**: `outbox:publicar`, `promociones:vencer`, `pagos:expirar-pendientes`, `conciliacion:ejecutar`, `liquidaciones:generar` (ver `routes/console.php`).
 
 Los puertos que esa capa usará ya están definidos y enlazados en `app/Providers/ComercialServiceProvider.php`, así que agregarla es escribir adaptadores delgados, sin tocar ningún caso de uso.

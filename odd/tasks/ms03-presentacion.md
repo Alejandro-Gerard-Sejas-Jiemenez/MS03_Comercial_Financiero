@@ -22,7 +22,7 @@ Rama: main (crear rama de feature antes del primer commit) · Entrega: ask-on-ri
 | T4 | S4,S5 | inline | hecho | middleware `sesion`/`rol`/`idempotente`, `ManejadorDeExcepciones`, `GET /api/v1/salud`, cableado en provider y bootstrap. 112 tests, 405 aserciones, 0 fallos |
 | T5 | S5 | inline | hecho | P2: 54 rutas REST (Pagos 16 con el webhook, Promociones 9, Acuerdos 12, Monetizacion 7, Liquidaciones 9, salud 1), `Presentador` reflexivo (oculta `*cifrado*` y `eventos`), `ControladorBase`, 5 comandos Artisan + Scheduler. 117 tests (+5 Feature con repos en memoria), 489 aserciones |
 | T6 | S5 | inline | hecho | `openapi.yaml` (OpenAPI 3.0.3, 44 paths, 54 operaciones) generado desde las rutas y los `validate()` por `php artisan openapi:generar`; `--check` para CI; 1 test falla si el archivo esta desactualizado. 118 tests, 495 aserciones |
-| T7 | S4 | inline | pendiente | P4 mensajeria |
+| T7 | S4 | inline | hecho | `RabbitMqMessageBroker` (php-amqplib 3.7, `COMERCIAL_BROKER_DRIVER=rabbitmq`), `ConsumidorDeEventos` (Inbox + transaccion), 4 suscriptores (Referencias, Pagos, Promociones, Liquidaciones), `mensajeria:consumir`, RabbitMQ en docker-compose. 121 tests, 508 aserciones. NO probado contra un RabbitMQ real |
 | T8 | S6 | inline | pendiente | P5 cierre |
 
 ## Log
@@ -39,3 +39,5 @@ Justificacion de tocar Domain (regla 3): subclases de `DomainException` son retr
 **L5 — 2026-10-29, P2 ejecutado en la rama `feat/p2-rest`.** Decisiones mias a revisar: (a) el webhook de la pasarela se autentica con `X-Webhook-Secret` (config `COMERCIAL_WEBHOOK_SECRETO`, vacio = rechaza todo); (b) un no-ADMIN solo ve/toca lo suyo (cliente o anfitrion del pago, dueno de promocion/metodo/liquidacion); (c) `monto_forzado` de un reembolso solo lo puede ADMIN; (d) el ADMIN no esta limitado por dueno. Pendiente: endpoints EVT van por mensajeria (P4); las rutas no se probaron contra PostgreSQL real.
 
 **L6 — 2026-10-29, P3 en la rama `feat/p3-openapi`.** Se genero en vez de escribir a mano ni usar Scribe/L5-Swagger (sin dependencias pesadas, sin deriva). Limite: las respuestas se describen genericas (`{data}` / `{codigo, mensaje}`), sin esquema por recurso; los campos de entrada salen de las reglas `validate()`.
+
+**L7 — 2026-10-29, P4 en la rama `feat/p4-mensajeria`.** Formas de `data` de los eventos de MS-01/MS-02 son una PROPUESTA mia (ver docblocks de los suscriptores), a acordar con esos equipos; MS-01 hoy no publica eventos. php-amqplib v3 exige `ext-sockets` (no esta en este PHP de Windows): se instalo con `--ignore-platform-req=ext-sockets`; en otra maquina hay que activar `extension=sockets` en php.ini antes de `composer install`. Un mensaje que falla se rechaza sin reencolar (sin DLQ configurada todavia). `reserva.cancelada` sincroniza la reserva solo si trae fechas.
