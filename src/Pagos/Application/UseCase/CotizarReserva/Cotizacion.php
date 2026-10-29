@@ -16,8 +16,7 @@ final class Cotizacion
         public readonly DesgloseComercial $desglose,
         public readonly ?string $promocionId = null,
         public readonly ?string $acuerdoId = null,
-    ) {
-    }
+    ) {}
 
     /** @return array<string, mixed> */
     public function aArreglo(): array

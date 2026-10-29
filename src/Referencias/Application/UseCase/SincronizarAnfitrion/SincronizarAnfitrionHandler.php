@@ -17,9 +17,7 @@ use Src\Referencias\Domain\EstadoVerificacionAnfitrion;
  */
 final class SincronizarAnfitrionHandler
 {
-    public function __construct(private readonly AnfitrionReferenceRepository $anfitriones)
-    {
-    }
+    public function __construct(private readonly AnfitrionReferenceRepository $anfitriones) {}
 
     public function __invoke(SincronizarAnfitrionCommand $comando): AnfitrionReference
     {

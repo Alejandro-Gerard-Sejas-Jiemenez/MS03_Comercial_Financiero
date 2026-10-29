@@ -13,8 +13,7 @@ final class ResultadoReversion
         public readonly bool $revertida,
         public readonly bool $requiereAjusteEnLaSiguienteLiquidacion,
         public readonly string $detalle,
-    ) {
-    }
+    ) {}
 
     public static function revertida(Comision $comision): self
     {
@@ -29,7 +28,7 @@ final class ResultadoReversion
             false,
             true,
             'la comision ya estaba LIQUIDADA: el asiento de reversa queda registrado y el '
-            . 'monto debe descontarse de la liquidacion siguiente',
+            .'monto debe descontarse de la liquidacion siguiente',
         );
     }
 
@@ -45,7 +44,7 @@ final class ResultadoReversion
             false,
             true,
             'reembolso parcial: la comision no se revierte entera, el ajuste va en la '
-            . 'liquidacion siguiente',
+            .'liquidacion siguiente',
         );
     }
 }

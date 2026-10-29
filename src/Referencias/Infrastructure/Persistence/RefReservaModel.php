@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Src\Referencias\Infrastructure\Persistence;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\CarbonImmutable;
 
 /**
  * Tabla `comercial.ref_reserva` (copia local alimentada por eventos de MS-02).
@@ -16,8 +17,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $anfitrion_id
  * @property string $alojamiento_id
  * @property string|null $categoria_alojamiento
- * @property \Illuminate\Support\CarbonImmutable $fecha_checkin
- * @property \Illuminate\Support\CarbonImmutable $fecha_checkout
+ * @property CarbonImmutable $fecha_checkin
+ * @property CarbonImmutable $fecha_checkout
  * @property int $noches
  * @property string $estado
  */

@@ -16,6 +16,5 @@ final class AcuerdoVigente
         public readonly string $anfitrionId,
         public readonly int $diasLiquidacion,
         public readonly ?string $reglaComisionId,
-    ) {
-    }
+    ) {}
 }

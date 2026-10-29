@@ -20,6 +20,5 @@ final class CriterioDePagos
         public readonly ?DateTimeImmutable $desde = null,
         public readonly ?DateTimeImmutable $hasta = null,
         public readonly int $limite = 50,
-    ) {
-    }
+    ) {}
 }

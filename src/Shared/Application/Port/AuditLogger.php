@@ -11,8 +11,8 @@ namespace Src\Shared\Application\Port;
 interface AuditLogger
 {
     /**
-     * @param array<string, mixed>|null $antes
-     * @param array<string, mixed>|null $despues
+     * @param  array<string, mixed>|null  $antes
+     * @param  array<string, mixed>|null  $despues
      */
     public function registrar(
         string $accion,

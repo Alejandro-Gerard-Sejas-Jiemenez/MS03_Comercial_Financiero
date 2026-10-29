@@ -16,6 +16,5 @@ final class RevisarDiferenciaConciliacionCommand
         public readonly ?string $transaccionId = null,
         /** Cierra la conciliacion si ya no queda nada por explicar. */
         public readonly bool $cerrar = false,
-    ) {
-    }
+    ) {}
 }

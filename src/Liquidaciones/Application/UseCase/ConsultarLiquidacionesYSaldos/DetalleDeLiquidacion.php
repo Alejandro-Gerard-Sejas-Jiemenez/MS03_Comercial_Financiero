@@ -13,8 +13,7 @@ final class DetalleDeLiquidacion
     public function __construct(
         public readonly Liquidacion $liquidacion,
         public readonly array $comisiones,
-    ) {
-    }
+    ) {}
 
     public function cantidadDeReservas(): int
     {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Src\Liquidaciones\Infrastructure\Persistence;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\CarbonImmutable;
 
 /**
  * Tabla `comercial.comision`.
@@ -22,7 +23,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $monto_neto_anfitrion
  * @property string $moneda
  * @property string $estado
- * @property \Illuminate\Support\CarbonImmutable|null $liquidable_desde
+ * @property CarbonImmutable|null $liquidable_desde
  */
 final class ComisionModel extends Model
 {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Src\Liquidaciones\Infrastructure\Persistence;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\CarbonImmutable;
 
 /**
  * Tabla `comercial.liquidacion`. `total_neto` lo escribe el repositorio y la
@@ -13,8 +14,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $liquidacion_id
  * @property string $anfitrion_id
  * @property string|null $metodo_id
- * @property \Illuminate\Support\CarbonImmutable $periodo_desde
- * @property \Illuminate\Support\CarbonImmutable $periodo_hasta
+ * @property CarbonImmutable $periodo_desde
+ * @property CarbonImmutable $periodo_hasta
  * @property string $total_bruto
  * @property string $total_comisiones
  * @property string $total_reembolsos

@@ -29,6 +29,5 @@ final class CrearPromocionCommand
         public readonly ?int $maxUsos = null,
         public readonly string $moneda = 'BOB',
         public readonly array $alojamientos = [],
-    ) {
-    }
+    ) {}
 }

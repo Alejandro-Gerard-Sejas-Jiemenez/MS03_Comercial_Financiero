@@ -20,6 +20,5 @@ final class ActualizarPromocionCommand
         public readonly ?int $minNoches = null,
         public readonly ?int $maxUsos = null,
         public readonly ?FinanciamientoDescuento $financiadaPor = null,
-    ) {
-    }
+    ) {}
 }

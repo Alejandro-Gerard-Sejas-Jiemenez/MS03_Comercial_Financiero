@@ -21,6 +21,5 @@ final class RegistrarUsoDePromocionCommand
         public readonly ?string $pagoId = null,
         public readonly ?string $sagaId = null,
         public readonly ?DateTimeImmutable $aplicadaEn = null,
-    ) {
-    }
+    ) {}
 }

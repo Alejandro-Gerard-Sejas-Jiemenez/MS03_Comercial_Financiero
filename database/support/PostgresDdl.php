@@ -55,7 +55,7 @@ final class PostgresDdl
     {
         self::ejecutar(
             "CREATE TRIGGER {$trigger} BEFORE UPDATE OR DELETE ON {$tabla} "
-            . 'FOR EACH ROW EXECUTE FUNCTION prohibir_modificacion()',
+            .'FOR EACH ROW EXECUTE FUNCTION prohibir_modificacion()',
         );
     }
 

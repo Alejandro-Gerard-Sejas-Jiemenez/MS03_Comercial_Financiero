@@ -18,6 +18,5 @@ final class EventoOutbox
         public readonly array $payload,
         public readonly ?string $sagaId,
         public readonly int $intentos,
-    ) {
-    }
+    ) {}
 }

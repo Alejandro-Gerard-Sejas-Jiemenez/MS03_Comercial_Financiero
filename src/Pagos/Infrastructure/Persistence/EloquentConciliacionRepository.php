@@ -15,9 +15,7 @@ use Src\Shared\Domain\Money;
 
 final class EloquentConciliacionRepository implements ConciliacionRepository
 {
-    public function __construct(private readonly UuidGenerator $uuid)
-    {
-    }
+    public function __construct(private readonly UuidGenerator $uuid) {}
 
     public function buscar(string $conciliacionId): ?Conciliacion
     {

@@ -16,6 +16,5 @@ final class ActualizarMetodoCobroCommand
         public readonly ?string $titular = null,
         public readonly ?string $banco = null,
         public readonly ?string $numero = null,
-    ) {
-    }
+    ) {}
 }

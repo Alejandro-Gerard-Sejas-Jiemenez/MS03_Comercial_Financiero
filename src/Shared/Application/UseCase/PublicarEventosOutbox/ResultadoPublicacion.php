@@ -9,6 +9,5 @@ final class ResultadoPublicacion
     public function __construct(
         public readonly int $publicados,
         public readonly int $fallidos,
-    ) {
-    }
+    ) {}
 }

@@ -20,8 +20,7 @@ final class AnfitrionReference
         public readonly EstadoVerificacionAnfitrion $estadoVerificacion,
         public readonly ?string $nit = null,
         public readonly ?string $razonSocial = null,
-    ) {
-    }
+    ) {}
 
     public function estaVerificado(): bool
     {

@@ -25,8 +25,7 @@ final class DesgloseComercial
         public readonly ?string $porcentajeAplicado = null,
         public readonly ?string $reglaComisionId = null,
         public readonly ?string $reglaCargoServicioId = null,
-    ) {
-    }
+    ) {}
 
     /** @return array<string, string|null> listo para serializar o guardar */
     public function aArreglo(): array

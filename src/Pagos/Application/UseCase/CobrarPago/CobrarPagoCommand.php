@@ -10,6 +10,5 @@ final class CobrarPagoCommand
         public readonly string $pagoId,
         /** Si no viene, se usa la del propio pago. */
         public readonly ?string $idempotencyKey = null,
-    ) {
-    }
+    ) {}
 }

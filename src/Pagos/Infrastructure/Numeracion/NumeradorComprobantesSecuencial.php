@@ -23,10 +23,10 @@ final class NumeradorComprobantesSecuencial implements NumeradorComprobantes
 {
     public function siguiente(TipoComprobante $tipo): string
     {
-        $prefijo = $tipo->value . '-' . date('Y') . '-';
+        $prefijo = $tipo->value.'-'.date('Y').'-';
 
         $ultimo = ComprobanteModel::query()
-            ->where('numero', 'like', $prefijo . '%')
+            ->where('numero', 'like', $prefijo.'%')
             ->orderByDesc('numero')
             ->lockForUpdate()
             ->value('numero');
@@ -35,6 +35,6 @@ final class NumeradorComprobantesSecuencial implements NumeradorComprobantes
             ? 1
             : ((int) substr((string) $ultimo, strlen($prefijo))) + 1;
 
-        return $prefijo . str_pad((string) $correlativo, 6, '0', STR_PAD_LEFT);
+        return $prefijo.str_pad((string) $correlativo, 6, '0', STR_PAD_LEFT);
     }
 }

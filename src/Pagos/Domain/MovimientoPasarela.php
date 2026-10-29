@@ -19,6 +19,5 @@ final class MovimientoPasarela
         public readonly Money $monto,
         public readonly ?DateTimeImmutable $fecha = null,
         public readonly ?string $tipo = null,
-    ) {
-    }
+    ) {}
 }

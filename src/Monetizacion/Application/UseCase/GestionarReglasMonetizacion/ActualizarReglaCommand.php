@@ -16,6 +16,5 @@ final class ActualizarReglaCommand
         public readonly ?string $porcentaje = null,
         public readonly ?int $montoFijoCentavos = null,
         public readonly ?DateTimeImmutable $vigenteHasta = null,
-    ) {
-    }
+    ) {}
 }

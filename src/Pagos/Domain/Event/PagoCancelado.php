@@ -17,8 +17,7 @@ final class PagoCancelado implements DomainEvent
         private readonly string $reservaId,
         private readonly string $motivo,
         private readonly ?string $sagaId = null,
-    ) {
-    }
+    ) {}
 
     public function tipoEvento(): string
     {

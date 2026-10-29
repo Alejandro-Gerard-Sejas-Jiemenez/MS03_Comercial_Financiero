@@ -6,13 +6,14 @@ namespace Src\Pagos\Infrastructure\Persistence;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\CarbonImmutable;
 
 /**
  * Tabla `comercial.conciliacion`. `diferencia` es columna generada: no se escribe.
  *
  * @property string $conciliacion_id
  * @property string $pasarela
- * @property \Illuminate\Support\CarbonImmutable $fecha_corte
+ * @property CarbonImmutable $fecha_corte
  * @property string $total_sistema
  * @property string $total_pasarela
  * @property string $diferencia

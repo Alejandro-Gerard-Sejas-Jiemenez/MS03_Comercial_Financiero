@@ -10,6 +10,5 @@ final class MarcarComisionesLiquidablesCommand
         public readonly string $reservaId,
         /** Si no viene, se toma del acuerdo ACTIVO del anfitrion. */
         public readonly ?int $diasLiquidacion = null,
-    ) {
-    }
+    ) {}
 }

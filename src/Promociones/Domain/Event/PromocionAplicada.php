@@ -32,8 +32,7 @@ final class PromocionAplicada implements DomainEvent
         private readonly ?string $reservaId = null,
         private readonly ?string $pagoId = null,
         private readonly ?string $sagaId = null,
-    ) {
-    }
+    ) {}
 
     public function tipoEvento(): string
     {

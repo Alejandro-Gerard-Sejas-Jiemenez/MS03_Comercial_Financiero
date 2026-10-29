@@ -27,8 +27,7 @@ final class ConciliacionItem
         private ?string $transaccionId,
         private ?string $observacion,
         private readonly ?string $itemId,
-    ) {
-    }
+    ) {}
 
     public static function coincide(MovimientoPasarela $movimiento, string $transaccionId): self
     {

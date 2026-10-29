@@ -38,8 +38,7 @@ final class RevertirComisionHandler
         private readonly LibroContableRepository $libro,
         private readonly UuidGenerator $uuid,
         private readonly TransactionManager $tx,
-    ) {
-    }
+    ) {}
 
     public function __invoke(RevertirComisionCommand $comando): ResultadoReversion
     {

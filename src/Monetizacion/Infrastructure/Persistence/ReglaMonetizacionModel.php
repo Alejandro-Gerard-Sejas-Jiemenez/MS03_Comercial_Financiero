@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Src\Monetizacion\Infrastructure\Persistence;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\CarbonImmutable;
 
 /**
  * Tabla `comercial.regla_monetizacion`.
@@ -21,8 +22,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $moneda
  * @property string|null $categoria_alojamiento
  * @property string|null $nivel_anfitrion
- * @property \Illuminate\Support\CarbonImmutable $vigente_desde
- * @property \Illuminate\Support\CarbonImmutable|null $vigente_hasta
+ * @property CarbonImmutable $vigente_desde
+ * @property CarbonImmutable|null $vigente_hasta
  * @property string $estado
  * @property string $creado_por
  */

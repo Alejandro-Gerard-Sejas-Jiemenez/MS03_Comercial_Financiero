@@ -30,8 +30,7 @@ final class CotizarReservaHandler
         private readonly CalculadorDeDescuento $promociones,
         private readonly AcuerdoComercialQuery $acuerdos,
         private readonly Clock $clock,
-    ) {
-    }
+    ) {}
 
     public function __invoke(CotizarReservaCommand $comando): Cotizacion
     {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Src\Acuerdos\Infrastructure\Persistence;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\CarbonImmutable;
 
 /**
  * Tabla `comercial.acuerdo_comercial`.
@@ -16,12 +17,12 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $anfitrion_id
  * @property string|null $regla_comision_id
  * @property string $estado
- * @property \Illuminate\Support\CarbonImmutable $fecha_inicio
- * @property \Illuminate\Support\CarbonImmutable|null $fecha_fin
+ * @property CarbonImmutable $fecha_inicio
+ * @property CarbonImmutable|null $fecha_fin
  * @property array<string, mixed> $condiciones
  * @property int $dias_liquidacion
  * @property string|null $aprobado_por
- * @property \Illuminate\Support\CarbonImmutable|null $aprobado_en
+ * @property CarbonImmutable|null $aprobado_en
  * @property string|null $motivo_estado
  */
 final class AcuerdoComercialModel extends Model

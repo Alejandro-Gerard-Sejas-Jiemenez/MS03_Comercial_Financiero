@@ -25,8 +25,7 @@ final class AcuerdoFinalizado implements DomainEvent
         private readonly ?string $motivo,
         private readonly ?DateTimeImmutable $fechaFin,
         private readonly ?string $sagaId = null,
-    ) {
-    }
+    ) {}
 
     public function tipoEvento(): string
     {

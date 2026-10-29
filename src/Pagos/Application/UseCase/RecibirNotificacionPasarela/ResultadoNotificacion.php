@@ -10,8 +10,7 @@ final class ResultadoNotificacion
         public readonly string $referenciaPasarela,
         public readonly bool $aplicada,
         public readonly bool $cambioElEstado,
-    ) {
-    }
+    ) {}
 
     public static function aplicada(string $referencia, bool $cambioElEstado): self
     {

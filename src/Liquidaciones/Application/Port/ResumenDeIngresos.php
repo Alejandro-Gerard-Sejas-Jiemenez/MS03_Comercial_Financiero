@@ -16,8 +16,7 @@ final class ResumenDeIngresos
         public readonly Money $totalReembolsos,
         public readonly Money $totalNetoAnfitriones,
         public readonly int $cantidadPagos,
-    ) {
-    }
+    ) {}
 
     /** Lo que se queda la plataforma: comision mas cargo de servicio, menos reembolsos. */
     public function ingresoDeLaPlataforma(): Money

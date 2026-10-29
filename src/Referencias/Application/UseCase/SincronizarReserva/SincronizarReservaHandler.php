@@ -16,9 +16,7 @@ use Src\Referencias\Domain\ReservaReferenceRepository;
  */
 final class SincronizarReservaHandler
 {
-    public function __construct(private readonly ReservaReferenceRepository $reservas)
-    {
-    }
+    public function __construct(private readonly ReservaReferenceRepository $reservas) {}
 
     public function __invoke(SincronizarReservaCommand $comando): ReservaReference
     {

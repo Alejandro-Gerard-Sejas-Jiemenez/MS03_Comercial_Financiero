@@ -11,7 +11,8 @@ namespace Src\Shared\Application\Port;
 interface MessageBroker
 {
     /**
-     * @param array<string, mixed> $mensaje
+     * @param  array<string, mixed>  $mensaje
+     *
      * @throws \RuntimeException si el broker no esta disponible
      */
     public function enviar(string $routingKey, array $mensaje): void;

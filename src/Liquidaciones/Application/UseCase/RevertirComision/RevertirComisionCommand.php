@@ -10,6 +10,5 @@ final class RevertirComisionCommand
         public readonly string $pagoId,
         /** Un reembolso parcial no borra la comision completa. */
         public readonly bool $esTotal = true,
-    ) {
-    }
+    ) {}
 }

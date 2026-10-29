@@ -13,6 +13,5 @@ final class VerificarMetodoCobroCommand
     public function __construct(
         public readonly string $metodoId,
         public readonly string $verificadoPor,
-    ) {
-    }
+    ) {}
 }

@@ -17,6 +17,5 @@ final class DescuentoAplicado
         public readonly int $descuentoCentavos,
         public readonly string $moneda,
         public readonly FinanciamientoDescuento $financiamiento,
-    ) {
-    }
+    ) {}
 }

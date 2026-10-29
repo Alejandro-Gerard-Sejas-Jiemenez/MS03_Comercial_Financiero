@@ -14,6 +14,5 @@ final class IngresoPorCategoria
         public readonly Money $totalCobrado,
         public readonly Money $totalComisiones,
         public readonly int $cantidadPagos,
-    ) {
-    }
+    ) {}
 }

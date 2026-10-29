@@ -22,8 +22,7 @@ final class ReembolsoProcesado implements DomainEvent
         private readonly bool $esTotal,
         private readonly ?string $referenciaPasarela = null,
         private readonly ?string $sagaId = null,
-    ) {
-    }
+    ) {}
 
     public function tipoEvento(): string
     {

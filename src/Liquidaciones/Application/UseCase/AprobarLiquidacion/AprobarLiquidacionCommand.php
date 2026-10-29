@@ -9,6 +9,5 @@ final class AprobarLiquidacionCommand
     public function __construct(
         public readonly string $liquidacionId,
         public readonly string $aprobadoPor,
-    ) {
-    }
+    ) {}
 }

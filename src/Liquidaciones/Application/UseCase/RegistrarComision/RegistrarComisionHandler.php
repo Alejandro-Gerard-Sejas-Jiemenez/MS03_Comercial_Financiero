@@ -35,8 +35,7 @@ final class RegistrarComisionHandler
         private readonly CalcularDesgloseComercialHandler $calcularDesglose,
         private readonly UuidGenerator $uuid,
         private readonly TransactionManager $tx,
-    ) {
-    }
+    ) {}
 
     public function __invoke(RegistrarComisionCommand $comando): Comision
     {

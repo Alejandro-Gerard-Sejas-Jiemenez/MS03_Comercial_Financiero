@@ -12,6 +12,5 @@ final class SincronizarAnfitrionCommand
         public readonly string $estado,
         public readonly ?string $nit = null,
         public readonly ?string $razonSocial = null,
-    ) {
-    }
+    ) {}
 }

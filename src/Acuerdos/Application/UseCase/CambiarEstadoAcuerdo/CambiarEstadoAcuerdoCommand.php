@@ -22,6 +22,5 @@ final class CambiarEstadoAcuerdoCommand
         public readonly string $solicitadoPor,
         public readonly ?string $motivo = null,
         public readonly ?string $sagaId = null,
-    ) {
-    }
+    ) {}
 }

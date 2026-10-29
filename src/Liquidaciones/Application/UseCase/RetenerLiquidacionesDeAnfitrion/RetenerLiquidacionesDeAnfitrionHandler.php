@@ -32,8 +32,7 @@ final class RetenerLiquidacionesDeAnfitrionHandler
         private readonly ComisionRepository $comisiones,
         private readonly AuditLogger $auditoria,
         private readonly TransactionManager $tx,
-    ) {
-    }
+    ) {}
 
     /** @return list<string> ids de las liquidaciones retenidas */
     public function __invoke(RetenerLiquidacionesDeAnfitrionCommand $comando): array

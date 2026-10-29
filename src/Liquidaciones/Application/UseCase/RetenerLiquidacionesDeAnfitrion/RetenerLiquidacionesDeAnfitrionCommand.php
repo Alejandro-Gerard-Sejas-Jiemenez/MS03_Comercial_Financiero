@@ -9,6 +9,5 @@ final class RetenerLiquidacionesDeAnfitrionCommand
     public function __construct(
         public readonly string $anfitrionId,
         public readonly string $motivo = 'anfitrion suspendido en MS-01',
-    ) {
-    }
+    ) {}
 }

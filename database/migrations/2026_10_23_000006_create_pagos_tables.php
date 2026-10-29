@@ -64,7 +64,7 @@ return new class extends Migration
             'pago',
             'chk_pago_estado',
             "estado IN ('PENDIENTE','AUTORIZADO','CAPTURADO','FALLIDO','CANCELADO',"
-            . "'REEMBOLSADO_PARCIAL','REEMBOLSADO')",
+            ."'REEMBOLSADO_PARCIAL','REEMBOLSADO')",
         );
         // La formula del desglose, garantizada por la base y no solo por el dominio.
         PostgresDdl::check(

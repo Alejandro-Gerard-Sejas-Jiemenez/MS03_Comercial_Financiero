@@ -26,8 +26,7 @@ final class PublicarEventosOutboxHandler
     public function __construct(
         private readonly OutboxRepository $outbox,
         private readonly MessageBroker $broker,
-    ) {
-    }
+    ) {}
 
     public function __invoke(PublicarEventosOutboxCommand $comando): ResultadoPublicacion
     {
@@ -49,13 +48,13 @@ final class PublicarEventosOutboxHandler
                 // Un broker caido no debe detener el lote ni perder el evento:
                 // la fila sigue pendiente y se reintenta en la proxima corrida.
                 $this->outbox->registrarIntento($evento->eventoId);
-                ++$fallidos;
+                $fallidos++;
 
                 continue;
             }
 
             $this->outbox->marcarPublicado($evento->eventoId);
-            ++$publicados;
+            $publicados++;
         }
 
         return new ResultadoPublicacion($publicados, $fallidos);

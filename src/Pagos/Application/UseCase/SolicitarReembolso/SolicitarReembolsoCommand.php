@@ -18,6 +18,5 @@ final class SolicitarReembolsoCommand
         public readonly ?Money $montoForzado = null,
         public readonly ?string $detalle = null,
         public readonly ?string $solicitadoPor = null,
-    ) {
-    }
+    ) {}
 }

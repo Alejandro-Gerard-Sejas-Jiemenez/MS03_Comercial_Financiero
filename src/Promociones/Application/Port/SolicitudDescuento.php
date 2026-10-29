@@ -22,6 +22,5 @@ final class SolicitudDescuento
         public readonly ?string $alojamientoId = null,
         public readonly ?string $anfitrionId = null,
         public readonly ?DateTimeImmutable $fecha = null,
-    ) {
-    }
+    ) {}
 }

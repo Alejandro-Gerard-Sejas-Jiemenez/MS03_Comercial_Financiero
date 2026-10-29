@@ -21,8 +21,7 @@ final class LiquidacionPagada implements DomainEvent
         private readonly DateTimeImmutable $periodoDesde,
         private readonly DateTimeImmutable $periodoHasta,
         private readonly string $referenciaTransferencia,
-    ) {
-    }
+    ) {}
 
     public function tipoEvento(): string
     {

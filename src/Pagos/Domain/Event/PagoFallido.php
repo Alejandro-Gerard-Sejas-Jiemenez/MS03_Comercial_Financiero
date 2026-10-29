@@ -17,8 +17,7 @@ final class PagoFallido implements DomainEvent
         private readonly string $reservaId,
         private readonly ?string $motivo = null,
         private readonly ?string $sagaId = null,
-    ) {
-    }
+    ) {}
 
     public function tipoEvento(): string
     {

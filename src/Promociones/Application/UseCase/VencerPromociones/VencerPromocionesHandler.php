@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Src\Promociones\Application\UseCase\VencerPromociones;
 
-use Src\Promociones\Domain\Promocion;
 use Src\Promociones\Domain\PromocionRepository;
 use Src\Shared\Application\Port\Clock;
 use Src\Shared\Application\Port\TransactionManager;
@@ -22,8 +21,7 @@ final class VencerPromocionesHandler
         private readonly PromocionRepository $promociones,
         private readonly Clock $clock,
         private readonly TransactionManager $transacciones,
-    ) {
-    }
+    ) {}
 
     /**
      * @return list<string> ids de las promociones que pasaron a VENCIDA

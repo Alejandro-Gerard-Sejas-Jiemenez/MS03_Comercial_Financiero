@@ -24,9 +24,7 @@ use Src\Shared\Domain\Money;
  */
 final class PasarelaPagoSimulada implements PasarelaPago
 {
-    public function __construct(private readonly string $nombre = 'SIMULADA')
-    {
-    }
+    public function __construct(private readonly string $nombre = 'SIMULADA') {}
 
     public function cobrar(
         string $pagoId,
@@ -77,6 +75,6 @@ final class PasarelaPagoSimulada implements PasarelaPago
 
     private function referencia(string $prefijo, string $idempotencyKey): string
     {
-        return $prefijo . '-' . substr(hash('sha256', $idempotencyKey), 0, 24);
+        return $prefijo.'-'.substr(hash('sha256', $idempotencyKey), 0, 24);
     }
 }

@@ -23,8 +23,7 @@ final class AcuerdoActivado implements DomainEvent
         private readonly ?DateTimeImmutable $fechaFin,
         private readonly string $aprobadoPor,
         private readonly ?string $sagaId = null,
-    ) {
-    }
+    ) {}
 
     public function tipoEvento(): string
     {

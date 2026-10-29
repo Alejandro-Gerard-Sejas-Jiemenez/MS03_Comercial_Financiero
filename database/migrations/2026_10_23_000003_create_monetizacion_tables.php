@@ -60,7 +60,7 @@ return new class extends Migration
             'regla_monetizacion',
             'chk_regla_calculo_coherente',
             "(tipo_calculo = 'PORCENTAJE' AND porcentaje IS NOT NULL)"
-            . " OR (tipo_calculo = 'MONTO_FIJO' AND monto_fijo IS NOT NULL)",
+            ." OR (tipo_calculo = 'MONTO_FIJO' AND monto_fijo IS NOT NULL)",
         );
         PostgresDdl::check(
             'regla_monetizacion',

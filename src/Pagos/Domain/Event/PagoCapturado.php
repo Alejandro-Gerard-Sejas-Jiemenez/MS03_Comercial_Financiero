@@ -31,8 +31,7 @@ final class PagoCapturado implements DomainEvent
         private readonly ?string $promocionId = null,
         private readonly ?string $sagaId = null,
         private readonly ?string $referenciaPasarela = null,
-    ) {
-    }
+    ) {}
 
     public function tipoEvento(): string
     {

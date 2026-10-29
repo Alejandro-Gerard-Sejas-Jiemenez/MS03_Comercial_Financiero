@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Src\Pagos\Application\UseCase\EjecutarConciliacion;
 
-use DomainException;
 use Src\Pagos\Application\Port\PasarelaPago;
 use Src\Pagos\Domain\Conciliacion;
 use Src\Pagos\Domain\ConciliacionRepository;
@@ -32,8 +31,7 @@ final class EjecutarConciliacionHandler
         private readonly UuidGenerator $uuid,
         private readonly Clock $clock,
         private readonly TransactionManager $tx,
-    ) {
-    }
+    ) {}
 
     public function __invoke(EjecutarConciliacionCommand $comando): Conciliacion
     {

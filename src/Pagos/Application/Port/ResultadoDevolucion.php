@@ -12,8 +12,7 @@ final class ResultadoDevolucion
         public readonly ?string $referencia,
         public readonly ?string $motivo,
         public readonly array $respuesta,
-    ) {
-    }
+    ) {}
 
     /** @param array<string, mixed> $respuesta */
     public static function exitoso(string $referencia, array $respuesta = []): self

@@ -13,6 +13,5 @@ final class EjecutarConciliacionCommand
         public readonly ?DateTimeImmutable $fechaCorte = null,
         public readonly ?string $ejecutadaPor = null,
         public readonly string $moneda = 'BOB',
-    ) {
-    }
+    ) {}
 }

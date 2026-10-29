@@ -17,6 +17,5 @@ final class CrearAcuerdoBorradorCommand
         public readonly ?string $reglaComisionId = null,
         public readonly ?DateTimeImmutable $fechaFin = null,
         public readonly array $condiciones = [],
-    ) {
-    }
+    ) {}
 }

@@ -17,6 +17,5 @@ final class SincronizarReservaCommand
         public readonly DateTimeImmutable $fechaCheckout,
         public readonly string $estado,
         public readonly ?string $categoriaAlojamiento = null,
-    ) {
-    }
+    ) {}
 }

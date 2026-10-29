@@ -15,6 +15,5 @@ final class AsignarAlojamientosCommand
         public readonly string $promocionId,
         public readonly array $alojamientos,
         public readonly string $asignadoPor,
-    ) {
-    }
+    ) {}
 }

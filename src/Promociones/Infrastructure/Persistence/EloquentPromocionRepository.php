@@ -147,7 +147,7 @@ final class EloquentPromocionRepository implements PromocionRepository
     }
 
     /**
-     * @param list<PromocionModel> $filas
+     * @param  list<PromocionModel>  $filas
      * @return list<Promocion>
      */
     private function aEntidades(array $filas): array
@@ -192,7 +192,7 @@ final class EloquentPromocionRepository implements PromocionRepository
      * Carga los alojamientos de varias promociones en una sola consulta, para
      * no caer en N+1.
      *
-     * @param list<string> $promocionIds
+     * @param  list<string>  $promocionIds
      * @return array<string, list<string>>
      */
     private function alojamientosDe(array $promocionIds): array

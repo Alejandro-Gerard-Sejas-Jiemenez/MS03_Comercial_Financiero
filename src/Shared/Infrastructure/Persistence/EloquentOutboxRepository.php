@@ -12,9 +12,7 @@ use Src\Shared\Domain\OutboxRepository;
 
 final class EloquentOutboxRepository implements OutboxRepository
 {
-    public function __construct(private readonly UuidGenerator $uuid)
-    {
-    }
+    public function __construct(private readonly UuidGenerator $uuid) {}
 
     public function agregar(DomainEvent $evento): void
     {

@@ -14,6 +14,5 @@ final class VencerPromocionesCommand
 {
     public function __construct(
         public readonly ?DateTimeImmutable $fecha = null,
-    ) {
-    }
+    ) {}
 }

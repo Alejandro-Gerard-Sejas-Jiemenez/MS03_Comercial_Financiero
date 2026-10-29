@@ -22,6 +22,5 @@ final class CrearReglaCommand
         public readonly ?DateTimeImmutable $vigenteHasta = null,
         public readonly ?string $categoriaAlojamiento = null,
         public readonly ?string $nivelAnfitrion = null,
-    ) {
-    }
+    ) {}
 }

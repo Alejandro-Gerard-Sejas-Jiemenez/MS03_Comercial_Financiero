@@ -17,6 +17,5 @@ final class ActualizarCondicionesAcuerdoCommand
         public readonly ?string $reglaComisionId = null,
         public readonly ?array $condiciones = null,
         public readonly ?DateTimeImmutable $fechaFin = null,
-    ) {
-    }
+    ) {}
 }

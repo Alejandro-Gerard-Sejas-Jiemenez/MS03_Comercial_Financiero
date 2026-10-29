@@ -20,6 +20,5 @@ final class CalcularDesgloseComercialCommand
         public readonly ?string $reglaComisionNegociadaId = null,
         /** Fecha de aplicacion; por omision, hoy. */
         public readonly ?DateTimeImmutable $fecha = null,
-    ) {
-    }
+    ) {}
 }

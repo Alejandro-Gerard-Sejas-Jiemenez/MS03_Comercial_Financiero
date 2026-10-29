@@ -30,6 +30,5 @@ final class RegistrarComisionCommand
         public readonly ?string $categoriaAlojamiento = null,
         public readonly ?string $nivelAnfitrion = null,
         public readonly ?DateTimeImmutable $fecha = null,
-    ) {
-    }
+    ) {}
 }

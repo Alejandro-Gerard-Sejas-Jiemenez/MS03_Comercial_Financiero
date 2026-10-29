@@ -13,6 +13,5 @@ final class EmitirComprobanteCommand
         public readonly TipoComprobante $tipo = TipoComprobante::RECIBO,
         public readonly ?string $nitCliente = null,
         public readonly ?string $razonSocial = null,
-    ) {
-    }
+    ) {}
 }

@@ -12,7 +12,8 @@ interface TransactionManager
 {
     /**
      * @template T
-     * @param callable():T $operacion
+     *
+     * @param  callable():T  $operacion
      * @return T
      */
     public function ejecutar(callable $operacion): mixed;

@@ -11,6 +11,5 @@ final class AprobarReembolsoCommand
         public readonly bool $aprobado,
         public readonly string $revisadoPor,
         public readonly ?string $detalle = null,
-    ) {
-    }
+    ) {}
 }

@@ -20,6 +20,5 @@ final class RegistrarMetodoCobroCommand
         public readonly string $registradoPor,
         public readonly ?string $banco = null,
         public readonly bool $esPrincipal = false,
-    ) {
-    }
+    ) {}
 }

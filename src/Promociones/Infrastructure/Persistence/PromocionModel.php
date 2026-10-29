@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Src\Promociones\Infrastructure\Persistence;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\CarbonImmutable;
 
 /**
  * Tabla `comercial.promocion`.
@@ -24,8 +25,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $anfitrion_id
  * @property string $financiada_por
  * @property int $min_noches
- * @property \Illuminate\Support\CarbonImmutable $vigente_desde
- * @property \Illuminate\Support\CarbonImmutable $vigente_hasta
+ * @property CarbonImmutable $vigente_desde
+ * @property CarbonImmutable $vigente_hasta
  * @property int|null $max_usos
  * @property int $usos_actuales
  * @property string $estado
