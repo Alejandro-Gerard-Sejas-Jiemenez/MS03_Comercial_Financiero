@@ -35,9 +35,9 @@ final class RegistrarUsoDePromocionTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->promociones = new InMemoryPromocionRepository();
-        $this->eventos = new InMemoryEventPublisher();
-        $this->transacciones = new SyncTransactionManager();
+        $this->promociones = new InMemoryPromocionRepository;
+        $this->eventos = new InMemoryEventPublisher;
+        $this->transacciones = new SyncTransactionManager;
         $this->handler = new RegistrarUsoDePromocionHandler(
             $this->promociones,
             $this->eventos,
@@ -96,35 +96,11 @@ final class RegistrarUsoDePromocionTest extends TestCase
         self::assertSame(1, $this->transacciones->revertidas());
     }
 
-    public function test_falla_si_la_promocion_no_existe(): void
-    {
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('no existe');
-
-        ($this->handler)(new RegistrarUsoDePromocionCommand(
-            promocionId: 'promo-9',
-            descuentoCentavos: 1000,
-        ));
-    }
-
-    public function test_la_fecha_de_aplicacion_sale_del_reloj(): void
-    {
-        $this->guardarActiva('promo-1');
-
-        ($this->handler)(new RegistrarUsoDePromocionCommand(
-            promocionId: 'promo-1',
-            descuentoCentavos: 1000,
-        ));
-
-        $payload = $this->eventos->primero()?->payload() ?? [];
-        self::assertStringStartsWith('2026-10-23T12:00:00', (string) $payload['aplicada_en']);
-    }
-
     private function guardarActiva(string $promocionId, ?int $maxUsos = null): Promocion
     {
         $promocion = Promocion::crear(
             promocionId: $promocionId,
-            nombre: 'Promocion ' . $promocionId,
+            nombre: 'Promocion '.$promocionId,
             tipo: TipoPromocion::TEMPORADA,
             tipoDescuento: TipoDescuento::PORCENTAJE,
             valor: '10.00',

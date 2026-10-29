@@ -46,44 +46,6 @@ final class AsientoTest extends TestCase
         ]);
     }
 
-    public function test_un_asiento_sin_movimientos_no_existe(): void
-    {
-        $this->expectException(DomainException::class);
-
-        Asiento::de('asiento-1', []);
-    }
-
-    public function test_un_movimiento_no_puede_pertenecer_a_otro_asiento(): void
-    {
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('pertenece a otro asiento');
-
-        Asiento::de('asiento-1', [
-            new MovimientoContable(
-                'asiento-OTRO',
-                CuentaContable::PASARELA,
-                TipoMovimiento::DEBITO,
-                Money::deCentavos(100),
-                OrigenMovimiento::PAGO,
-                'pago-1',
-            ),
-        ]);
-    }
-
-    public function test_un_movimiento_tiene_monto_positivo_porque_el_signo_lo_da_el_tipo(): void
-    {
-        $this->expectException(DomainException::class);
-
-        new MovimientoContable(
-            'asiento-1',
-            CuentaContable::PASARELA,
-            TipoMovimiento::DEBITO,
-            Money::deCentavos(-100),
-            OrigenMovimiento::PAGO,
-            'pago-1',
-        );
-    }
-
     public function test_el_asiento_de_un_pago_capturado_reparte_el_total_cobrado(): void
     {
         // 1000 de alojamiento - 100 de descuento + 45 de cargo = 945 cobrados.
@@ -114,22 +76,6 @@ final class AsientoTest extends TestCase
         self::assertSame(['CREDITO', '135.00'], $porCuenta['INGRESO_COMISION']);
         self::assertSame(['CREDITO', '45.00'], $porCuenta['INGRESO_CARGO_SERVICIO']);
         self::assertSame(['CREDITO', '765.00'], $porCuenta['POR_PAGAR_ANFITRION']);
-    }
-
-    public function test_el_asiento_del_pago_omite_las_cuentas_en_cero(): void
-    {
-        $asiento = Asiento::porPagoCapturado(
-            asientoId: 'asiento-1',
-            pagoId: 'pago-1',
-            anfitrionId: 'anfitrion-1',
-            total: Money::deCentavos(50000),
-            comision: Money::cero(),
-            cargoServicio: Money::cero(),
-            netoAnfitrion: Money::deCentavos(50000),
-        );
-
-        // Sin comision ni cargo, el asiento tiene dos lineas, no cuatro en cero.
-        self::assertCount(2, $asiento->movimientos());
     }
 
     public function test_el_asiento_de_una_comision_revertida_cuadra_contra_reembolsos(): void

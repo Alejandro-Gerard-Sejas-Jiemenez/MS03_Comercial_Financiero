@@ -58,7 +58,7 @@ final class InMemoryPagoRepository implements PagoRepository
     public function guardar(Pago $pago): void
     {
         $this->pagos[$pago->pagoId()] = $pago;
-        ++$this->guardados;
+        $this->guardados++;
     }
 
     public function totalReembolsado(string $pagoId): Money

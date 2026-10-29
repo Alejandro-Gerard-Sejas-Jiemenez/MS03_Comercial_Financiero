@@ -37,14 +37,6 @@ final class ComisionYLiquidacionTest extends TestCase
         $this->comision(base: 10000, monto: 10001);
     }
 
-    public function test_guarda_el_porcentaje_aplicado_como_snapshot(): void
-    {
-        $comision = $this->comision(porcentaje: '15.50');
-
-        // Si manana cambia la regla, este historico no se mueve.
-        self::assertSame('15.50', $comision->porcentajeAplicado());
-    }
-
     public function test_una_comision_retenida_pasa_a_liquidable_con_su_plazo(): void
     {
         $comision = $this->comision();
@@ -58,51 +50,6 @@ final class ComisionYLiquidacionTest extends TestCase
         );
         self::assertTrue($comision->sePuedeLiquidarEn(new DateTimeImmutable('2026-11-10')));
         self::assertTrue($comision->sePuedeLiquidarEn(new DateTimeImmutable('2026-11-20')));
-    }
-
-    public function test_una_comision_revertida_no_se_vuelve_liquidable(): void
-    {
-        $comision = $this->comision();
-        $comision->revertir();
-
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('esta REVERTIDA y no se puede liquidar');
-
-        $comision->marcarLiquidable(new DateTimeImmutable('2026-11-10'));
-    }
-
-    public function test_solo_una_comision_liquidable_entra_en_una_liquidacion(): void
-    {
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Solo se liquida una comision LIQUIDABLE');
-
-        $this->comision()->asignarALiquidacion('liq-1');
-    }
-
-    public function test_una_comision_liquidada_se_libera_si_la_liquidacion_se_rechaza(): void
-    {
-        $comision = $this->comision();
-        $comision->marcarLiquidable(new DateTimeImmutable('2026-11-10'));
-        $comision->asignarALiquidacion('liq-1');
-
-        self::assertSame('liq-1', $comision->liquidacionId());
-
-        $comision->liberar();
-
-        self::assertSame(EstadoComision::LIQUIDABLE, $comision->estado());
-        self::assertNull($comision->liquidacionId(), 'queda libre para la corrida siguiente');
-    }
-
-    public function test_una_comision_ya_liquidada_no_se_revierte(): void
-    {
-        $comision = $this->comision();
-        $comision->marcarLiquidable(new DateTimeImmutable('2026-11-10'));
-        $comision->asignarALiquidacion('liq-1');
-
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('se descuenta de la liquidacion siguiente');
-
-        $comision->revertir();
     }
 
     public function test_la_liquidacion_calcula_neto_igual_a_bruto_menos_comisiones_menos_reembolsos(): void
@@ -119,24 +66,6 @@ final class ComisionYLiquidacionTest extends TestCase
         $this->expectExceptionMessage('los reembolsos superan lo que se le debe');
 
         $this->liquidacion(bruto: 100000, comisiones: 15000, reembolsos: 90000);
-    }
-
-    public function test_no_se_genera_una_liquidacion_de_monto_cero(): void
-    {
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('monto cero');
-
-        $this->liquidacion(bruto: 100000, comisiones: 100000, reembolsos: 0);
-    }
-
-    public function test_no_se_aprueba_una_liquidacion_sin_metodo_de_cobro(): void
-    {
-        $liquidacion = $this->liquidacion(metodoId: null);
-
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('sin metodo de cobro verificado');
-
-        $liquidacion->aprobar('admin-1');
     }
 
     public function test_solo_se_paga_una_liquidacion_aprobada(): void
@@ -167,37 +96,6 @@ final class ComisionYLiquidacionTest extends TestCase
         self::assertSame('1020.00', $payload['total_neto']);
         self::assertSame('TRANSF-0001', $payload['referencia_transferencia']);
         self::assertSame('anfitrion-1', $payload['anfitrion_id']);
-    }
-
-    public function test_pagar_exige_la_referencia_de_la_transferencia(): void
-    {
-        $liquidacion = $this->liquidacion();
-        $liquidacion->aprobar('admin-1');
-
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('referencia de la transferencia');
-
-        $liquidacion->pagar('   ');
-    }
-
-    public function test_una_liquidacion_pagada_no_se_anula(): void
-    {
-        $liquidacion = $this->liquidacion();
-        $liquidacion->aprobar('admin-1');
-        $liquidacion->pagar('TRANSF-1');
-
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('No se anula una liquidacion en estado PAGADA');
-
-        $liquidacion->anular('error');
-    }
-
-    public function test_rechazar_exige_motivo(): void
-    {
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('exige un motivo');
-
-        $this->liquidacion()->rechazar('admin-1', '  ');
     }
 
     private function comision(

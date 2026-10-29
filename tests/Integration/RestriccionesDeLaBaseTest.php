@@ -23,7 +23,9 @@ use Throwable;
 final class RestriccionesDeLaBaseTest extends TestCase
 {
     private string $anfitrionId = '11111111-1111-4111-8111-111111111111';
+
     private string $reservaId = '22222222-2222-4222-8222-222222222222';
+
     private string $clienteId = '33333333-3333-4333-8333-333333333333';
 
     protected function setUp(): void
@@ -37,7 +39,7 @@ final class RestriccionesDeLaBaseTest extends TestCase
         try {
             DB::connection()->getPdo();
         } catch (Throwable $e) {
-            self::markTestSkipped('No hay PostgreSQL disponible: ' . $e->getMessage());
+            self::markTestSkipped('No hay PostgreSQL disponible: '.$e->getMessage());
         }
 
         if (! DB::getSchemaBuilder()->hasTable('pago')) {

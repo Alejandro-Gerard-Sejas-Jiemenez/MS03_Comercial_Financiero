@@ -26,9 +26,7 @@ final class FakePasarelaPago implements PasarelaPago
     /** @var list<MovimientoPasarela> */
     private array $reporte = [];
 
-    public function __construct(private readonly string $nombre = 'FAKE')
-    {
-    }
+    public function __construct(private readonly string $nombre = 'FAKE') {}
 
     public function cobrar(
         string $pagoId,
@@ -43,7 +41,7 @@ final class FakePasarelaPago implements PasarelaPago
         ];
 
         return $this->apruebaCobros
-            ? ResultadoCobro::exitoso('ref-cobro-' . count($this->llamadas), ['fake' => true])
+            ? ResultadoCobro::exitoso('ref-cobro-'.count($this->llamadas), ['fake' => true])
             : ResultadoCobro::fallido($this->motivoDeRechazo, ['fake' => true]);
     }
 
@@ -60,7 +58,7 @@ final class FakePasarelaPago implements PasarelaPago
         ];
 
         return $this->apruebaDevoluciones
-            ? ResultadoDevolucion::exitoso('ref-dev-' . count($this->llamadas), ['fake' => true])
+            ? ResultadoDevolucion::exitoso('ref-dev-'.count($this->llamadas), ['fake' => true])
             : ResultadoDevolucion::fallido($this->motivoDeRechazo, ['fake' => true]);
     }
 

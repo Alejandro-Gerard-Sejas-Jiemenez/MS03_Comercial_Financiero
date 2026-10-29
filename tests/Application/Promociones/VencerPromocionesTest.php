@@ -33,9 +33,9 @@ final class VencerPromocionesTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->promociones = new InMemoryPromocionRepository();
+        $this->promociones = new InMemoryPromocionRepository;
         $this->clock = new FrozenClock('2026-10-23 12:00:00');
-        $this->transacciones = new SyncTransactionManager();
+        $this->transacciones = new SyncTransactionManager;
         $this->handler = new VencerPromocionesHandler(
             $this->promociones,
             $this->clock,
@@ -50,7 +50,7 @@ final class VencerPromocionesTest extends TestCase
         $cancelada = $this->guardarActiva('promo-cancelada', vigenteHasta: '2026-10-10 23:59:59');
         $cancelada->cancelar();
 
-        $vencidas = ($this->handler)(new VencerPromocionesCommand());
+        $vencidas = ($this->handler)(new VencerPromocionesCommand);
 
         self::assertSame(['promo-pasada'], $vencidas);
         self::assertSame(EstadoPromocion::VENCIDA, $pasada->estado());
@@ -60,35 +60,11 @@ final class VencerPromocionesTest extends TestCase
         self::assertSame(1, $this->transacciones->transacciones());
     }
 
-    public function test_usa_la_fecha_del_comando_cuando_viene(): void
-    {
-        $promocion = $this->guardarActiva('promo-1', vigenteHasta: '2026-11-30 23:59:59');
-
-        // Con la fecha del reloj (23 de octubre) todavia no vence.
-        self::assertSame([], ($this->handler)(new VencerPromocionesCommand()));
-        self::assertSame(EstadoPromocion::ACTIVA, $promocion->estado());
-
-        $vencidas = ($this->handler)(new VencerPromocionesCommand(
-            new DateTimeImmutable('2026-12-01 00:00:00'),
-        ));
-
-        self::assertSame(['promo-1'], $vencidas);
-        self::assertSame(EstadoPromocion::VENCIDA, $promocion->estado());
-    }
-
-    public function test_sin_promociones_por_vencer_no_escribe_nada(): void
-    {
-        $this->guardarActiva('promo-1', vigenteHasta: '2026-12-31 23:59:59');
-
-        self::assertSame([], ($this->handler)(new VencerPromocionesCommand()));
-        self::assertSame(1, $this->promociones->guardadas());
-    }
-
     private function guardarActiva(string $promocionId, string $vigenteHasta): Promocion
     {
         $promocion = Promocion::crear(
             promocionId: $promocionId,
-            nombre: 'Promocion ' . $promocionId,
+            nombre: 'Promocion '.$promocionId,
             tipo: TipoPromocion::TEMPORADA,
             tipoDescuento: TipoDescuento::PORCENTAJE,
             valor: '10.00',

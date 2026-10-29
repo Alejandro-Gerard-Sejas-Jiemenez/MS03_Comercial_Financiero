@@ -23,7 +23,7 @@ final class FrozenClock implements Clock
 
     public function hoy(): DateTimeImmutable
     {
-        return new DateTimeImmutable($this->ahora->format('Y-m-d') . ' 00:00:00');
+        return new DateTimeImmutable($this->ahora->format('Y-m-d').' 00:00:00');
     }
 
     public function avanzarDias(int $dias): void

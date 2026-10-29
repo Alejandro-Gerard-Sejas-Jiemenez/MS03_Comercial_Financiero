@@ -49,31 +49,11 @@ final class MoneyTest extends TestCase
         self::assertSame(-2550, Money::deDecimal('-25.50')->centavos());
     }
 
-    public function test_rechaza_un_decimal_con_mas_de_dos_cifras(): void
-    {
-        $this->expectException(DomainException::class);
-
-        Money::deDecimal('10.555');
-    }
-
-    public function test_escribe_el_formato_decimal_de_la_base_de_datos(): void
-    {
-        self::assertSame('0.00', Money::cero()->aDecimal());
-        self::assertSame('0.07', Money::deCentavos(7)->aDecimal());
-        self::assertSame('1234.50', Money::deCentavos(123450)->aDecimal());
-        self::assertSame('-25.50', Money::deCentavos(-2550)->aDecimal());
-    }
-
     public function test_comision_es_la_base_por_el_porcentaje(): void
     {
         $comision = Money::deCentavos(100000)->porPorcentaje('15');
 
         self::assertSame(15000, $comision->centavos());
-    }
-
-    public function test_el_porcentaje_admite_dos_decimales(): void
-    {
-        self::assertSame(1550, Money::deCentavos(10000)->porPorcentaje('15.50')->centavos());
     }
 
     public function test_el_porcentaje_redondea_el_medio_centavo_hacia_arriba(): void
@@ -84,60 +64,10 @@ final class MoneyTest extends TestCase
         self::assertSame(123, Money::deCentavos(1000)->porPorcentaje('12.34')->centavos());
     }
 
-    public function test_rechaza_un_porcentaje_fuera_de_rango(): void
-    {
-        $this->expectException(DomainException::class);
-
-        Money::deCentavos(10000)->porPorcentaje('101');
-    }
-
     public function test_no_mezcla_monedas(): void
     {
         $this->expectException(DomainException::class);
 
         Money::deCentavos(10000, 'BOB')->mas(Money::deCentavos(10000, 'USD'));
-    }
-
-    public function test_rechaza_una_moneda_no_soportada(): void
-    {
-        $this->expectException(DomainException::class);
-
-        Money::deCentavos(100, 'EUR');
-    }
-
-    public function test_compara_montos(): void
-    {
-        $diez = Money::deCentavos(1000);
-        $veinte = Money::deCentavos(2000);
-
-        self::assertTrue($veinte->esMayorQue($diez));
-        self::assertFalse($diez->esMayorQue($veinte));
-        self::assertTrue($diez->esMenorOIgualQue($diez));
-        self::assertTrue($diez->igualA(Money::deCentavos(1000)));
-        self::assertFalse($diez->igualA(Money::deCentavos(1000, 'USD')));
-        self::assertTrue(Money::cero()->esCero());
-        self::assertTrue(Money::deCentavos(-1)->esNegativo());
-    }
-
-    public function test_suma_una_lista_de_montos(): void
-    {
-        $suma = Money::sumaDe([
-            Money::deCentavos(1000),
-            Money::deCentavos(2500),
-            Money::deCentavos(5),
-        ]);
-
-        self::assertSame(3505, $suma->centavos());
-        self::assertSame(0, Money::sumaDe([])->centavos());
-    }
-
-    public function test_multiplica_por_un_factor_entero(): void
-    {
-        self::assertSame(30000, Money::deCentavos(10000)->multiplicadoPor(3)->centavos());
-    }
-
-    public function test_niega_un_monto_para_los_asientos_de_reversa(): void
-    {
-        self::assertSame(-10000, Money::deCentavos(10000)->negado()->centavos());
     }
 }

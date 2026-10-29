@@ -95,19 +95,17 @@ final class ContenedorResuelveLosEnlacesTest extends TestCase
         ]);
     }
 
-    /**
-     * @param class-string $puerto
-     */
-    #[\PHPUnit\Framework\Attributes\DataProvider('puertos')]
-    public function test_cada_puerto_tiene_su_implementacion(string $puerto): void
+    public function test_cada_puerto_tiene_su_implementacion(): void
     {
-        $resuelto = $this->app->make($puerto);
+        foreach (self::puertos() as [$puerto]) {
+            $resuelto = $this->app->make($puerto);
 
-        self::assertInstanceOf($puerto, $resuelto);
-        self::assertTrue(
-            (new ReflectionClass($resuelto))->getNamespaceName() !== '',
-            'la implementacion debe ser una clase con namespace propio',
-        );
+            self::assertInstanceOf($puerto, $resuelto, $puerto);
+            self::assertTrue(
+                (new ReflectionClass($resuelto))->getNamespaceName() !== '',
+                "{$puerto}: la implementacion debe ser una clase con namespace propio",
+            );
+        }
     }
 
     /** @return list<array{class-string}> */
@@ -126,12 +124,11 @@ final class ContenedorResuelveLosEnlacesTest extends TestCase
     /**
      * Los casos de uso que cruzan paquetes son los que mas facil se rompen:
      * si el contenedor los arma, el grafo completo de puertos esta enlazado.
-     *
-     * @param class-string $handler
      */
-    #[\PHPUnit\Framework\Attributes\DataProvider('casosDeUsoConMuchasDependencias')]
-    public function test_el_contenedor_arma_los_casos_de_uso_que_cruzan_paquetes(string $handler): void
+    public function test_el_contenedor_arma_los_casos_de_uso_que_cruzan_paquetes(): void
     {
-        self::assertInstanceOf($handler, $this->app->make($handler));
+        foreach (self::casosDeUsoConMuchasDependencias() as [$handler]) {
+            self::assertInstanceOf($handler, $this->app->make($handler), $handler);
+        }
     }
 }

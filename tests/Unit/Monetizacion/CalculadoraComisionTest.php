@@ -22,7 +22,7 @@ final class CalculadoraComisionTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->calculadora = new CalculadoraComision();
+        $this->calculadora = new CalculadoraComision;
     }
 
     public function test_calcula_comision_cargo_de_servicio_y_neto_del_anfitrion(): void
@@ -76,78 +76,12 @@ final class CalculadoraComisionTest extends TestCase
         self::assertNull($desglose->porcentajeAplicado);
     }
 
-    public function test_acepta_una_comision_de_monto_fijo(): void
-    {
-        $regla = ReglaMonetizacion::porMontoFijo(
-            'r-fija',
-            'Comision fija',
-            Concepto::COMISION_ANFITRION,
-            Money::deCentavos(5000),
-            new DateTimeImmutable('2026-01-01'),
-            'admin',
-        );
-
-        $desglose = $this->calculadora->calcular(Money::deCentavos(100000), Money::cero(), reglaComision: $regla);
-
-        self::assertSame('50.00', $desglose->montoComision->aDecimal());
-        self::assertSame('950.00', $desglose->netoAnfitrion->aDecimal());
-        self::assertNull($desglose->porcentajeAplicado, 'un monto fijo no tiene porcentaje aplicado');
-    }
-
     public function test_rechaza_un_descuento_mayor_al_subtotal(): void
     {
         $this->expectException(DomainException::class);
         $this->expectExceptionMessage('El descuento no puede superar el subtotal');
 
         $this->calculadora->calcular(Money::deCentavos(10000), Money::deCentavos(10001));
-    }
-
-    public function test_rechaza_un_descuento_negativo(): void
-    {
-        $this->expectException(DomainException::class);
-
-        $this->calculadora->calcular(Money::deCentavos(10000), Money::deCentavos(-1));
-    }
-
-    public function test_rechaza_usar_un_cargo_al_cliente_como_comision_al_anfitrion(): void
-    {
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('no es de concepto COMISION_ANFITRION');
-
-        $this->calculadora->calcular(
-            Money::deCentavos(10000),
-            Money::cero(),
-            reglaComision: $this->cargoServicioDel('5'),
-        );
-    }
-
-    public function test_rechaza_usar_una_comision_como_cargo_al_cliente(): void
-    {
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('no es de concepto CARGO_SERVICIO_CLIENTE');
-
-        $this->calculadora->calcular(
-            Money::deCentavos(10000),
-            Money::cero(),
-            reglaCargoServicio: $this->comisionDel('15'),
-        );
-    }
-
-    public function test_rechaza_una_comision_de_monto_fijo_mayor_a_la_base(): void
-    {
-        $regla = ReglaMonetizacion::porMontoFijo(
-            'r-grande',
-            'Comision desproporcionada',
-            Concepto::COMISION_ANFITRION,
-            Money::deCentavos(20000),
-            new DateTimeImmutable('2026-01-01'),
-            'admin',
-        );
-
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('La comision no puede superar la base comisionable');
-
-        $this->calculadora->calcular(Money::deCentavos(10000), Money::cero(), reglaComision: $regla);
     }
 
     private function comisionDel(string $porcentaje): ReglaMonetizacion

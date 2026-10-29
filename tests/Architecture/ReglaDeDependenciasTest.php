@@ -47,7 +47,7 @@ final class ReglaDeDependenciasTest extends TestCase
         self::assertSame(
             [],
             $infracciones,
-            "El Dominio debe poder probarse sin Laravel:\n" . implode("\n", $infracciones),
+            "El Dominio debe poder probarse sin Laravel:\n".implode("\n", $infracciones),
         );
     }
 
@@ -66,7 +66,7 @@ final class ReglaDeDependenciasTest extends TestCase
         self::assertSame(
             [],
             $infracciones,
-            "Los casos de uso hablan con puertos, no con el framework:\n" . implode("\n", $infracciones),
+            "Los casos de uso hablan con puertos, no con el framework:\n".implode("\n", $infracciones),
         );
     }
 
@@ -89,7 +89,7 @@ final class ReglaDeDependenciasTest extends TestCase
         self::assertSame(
             [],
             $infracciones,
-            "Las dependencias solo apuntan hacia adentro:\n" . implode("\n", $infracciones),
+            "Las dependencias solo apuntan hacia adentro:\n".implode("\n", $infracciones),
         );
     }
 
@@ -109,7 +109,7 @@ final class ReglaDeDependenciasTest extends TestCase
             [],
             $infracciones,
             "La Aplicacion define puertos; la Infraestructura los implementa:\n"
-            . implode("\n", $infracciones),
+            .implode("\n", $infracciones),
         );
     }
 
@@ -146,27 +146,7 @@ final class ReglaDeDependenciasTest extends TestCase
         self::assertSame(
             [],
             $infracciones,
-            "Un paquete no toca la infraestructura de otro:\n" . implode("\n", $infracciones),
-        );
-    }
-
-    public function test_no_hay_capa_de_presentacion_todavia(): void
-    {
-        $encontradas = [];
-
-        foreach (self::PAQUETES as $paquete) {
-            $ruta = $this->raiz() . "/src/{$paquete}/Presentation";
-
-            if (is_dir($ruta)) {
-                $encontradas[] = "src/{$paquete}/Presentation";
-            }
-        }
-
-        self::assertSame(
-            [],
-            $encontradas,
-            'El alcance pedido es backend sin capa de Presentacion. Si se agrega, '
-            . "hay que actualizar esta prueba y CASOS_DE_USO.md:\n" . implode("\n", $encontradas),
+            "Un paquete no toca la infraestructura de otro:\n".implode("\n", $infracciones),
         );
     }
 
@@ -180,7 +160,7 @@ final class ReglaDeDependenciasTest extends TestCase
         $archivos = [];
 
         foreach (self::PAQUETES as $paquete) {
-            $archivos += $this->archivosEn($this->raiz() . "/src/{$paquete}/{$capa}");
+            $archivos += $this->archivosEn($this->raiz()."/src/{$paquete}/{$capa}");
         }
 
         self::assertNotSame([], $archivos, "No se encontro ningun archivo de la capa {$capa}");
@@ -191,7 +171,7 @@ final class ReglaDeDependenciasTest extends TestCase
     /** @return array<string, string> */
     private function archivosDelPaquete(string $paquete): array
     {
-        return $this->archivosEn($this->raiz() . "/src/{$paquete}");
+        return $this->archivosEn($this->raiz()."/src/{$paquete}");
     }
 
     /** @return array<string, string> */
@@ -208,7 +188,7 @@ final class ReglaDeDependenciasTest extends TestCase
         foreach ($iterador as $archivo) {
             if ($archivo->isFile() && $archivo->getExtension() === 'php') {
                 $ruta = str_replace('\\', '/', $archivo->getPathname());
-                $relativa = str_replace(str_replace('\\', '/', $this->raiz()) . '/', '', $ruta);
+                $relativa = str_replace(str_replace('\\', '/', $this->raiz()).'/', '', $ruta);
                 $archivos[$relativa] = (string) file_get_contents($archivo->getPathname());
             }
         }

@@ -18,7 +18,7 @@ final class CifradorFalso implements CifradorDeDatos
 
     public function cifrar(string $valor): string
     {
-        return self::PREFIJO . base64_encode($valor);
+        return self::PREFIJO.base64_encode($valor);
     }
 
     public function descifrar(string $valorCifrado): string

@@ -19,12 +19,12 @@ final class SyncTransactionManager implements TransactionManager
 
     public function ejecutar(callable $operacion): mixed
     {
-        ++$this->transacciones;
+        $this->transacciones++;
 
         try {
             return $operacion();
         } catch (Throwable $e) {
-            ++$this->revertidas;
+            $this->revertidas++;
 
             throw $e;
         }

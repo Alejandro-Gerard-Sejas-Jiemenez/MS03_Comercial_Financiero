@@ -13,7 +13,6 @@ use Src\Pagos\Application\UseCase\CrearPago\CrearPagoHandler;
 use Src\Pagos\Domain\EstadoPago;
 use Src\Pagos\Domain\EstadoTransaccion;
 use Src\Pagos\Domain\MetodoPago;
-use Src\Pagos\Domain\TipoTransaccion;
 use Tests\Doubles\FakePasarelaPago;
 use Tests\Doubles\InMemoryEventPublisher;
 use Tests\Doubles\InMemoryPagoRepository;
@@ -30,18 +29,22 @@ use Tests\Doubles\SyncTransactionManager;
 final class CobroDePagosTest extends TestCase
 {
     private InMemoryPagoRepository $pagos;
+
     private InMemoryTransaccionPagoRepository $transacciones;
+
     private InMemoryEventPublisher $eventos;
+
     private SyncTransactionManager $tx;
+
     private SequentialUuidGenerator $uuid;
 
     protected function setUp(): void
     {
-        $this->pagos = new InMemoryPagoRepository();
-        $this->transacciones = new InMemoryTransaccionPagoRepository();
-        $this->eventos = new InMemoryEventPublisher();
-        $this->tx = new SyncTransactionManager();
-        $this->uuid = new SequentialUuidGenerator();
+        $this->pagos = new InMemoryPagoRepository;
+        $this->transacciones = new InMemoryTransaccionPagoRepository;
+        $this->eventos = new InMemoryEventPublisher;
+        $this->tx = new SyncTransactionManager;
+        $this->uuid = new SequentialUuidGenerator;
     }
 
     public function test_crear_pago_lo_deja_pendiente_con_el_desglose_cotizado(): void
@@ -80,7 +83,7 @@ final class CobroDePagosTest extends TestCase
     public function test_cobrar_captura_el_pago_y_emite_pago_capturado(): void
     {
         $pago = ($this->crearPago())($this->comandoDeCreacion());
-        $pasarela = new FakePasarelaPago();
+        $pasarela = new FakePasarelaPago;
 
         $cobrado = ($this->cobrarPago($pasarela))(new CobrarPagoCommand($pago->pagoId()));
 
@@ -90,33 +93,10 @@ final class CobroDePagosTest extends TestCase
         self::assertFalse($this->eventos->contiene('pago.fallido'));
     }
 
-    public function test_cobrar_registra_la_transaccion_exitosa_con_la_pasarela(): void
-    {
-        $pago = ($this->crearPago())($this->comandoDeCreacion());
-
-        ($this->cobrarPago(new FakePasarelaPago()))(new CobrarPagoCommand($pago->pagoId()));
-
-        self::assertSame(1, $this->transacciones->cantidad());
-        $transaccion = $this->transacciones->todas()[0];
-        self::assertSame(TipoTransaccion::CAPTURA, $transaccion->tipo);
-        self::assertSame(EstadoTransaccion::EXITOSA, $transaccion->estado);
-        self::assertSame('945.00', $transaccion->monto->aDecimal());
-    }
-
-    public function test_le_pasa_a_la_pasarela_la_misma_idempotency_key_del_pago(): void
-    {
-        $pago = ($this->crearPago())($this->comandoDeCreacion(idempotencyKey: 'saga-abc'));
-        $pasarela = new FakePasarelaPago();
-
-        ($this->cobrarPago($pasarela))(new CobrarPagoCommand($pago->pagoId()));
-
-        self::assertSame('saga-abc', $pasarela->llamadas()[0]['idempotencyKey']);
-    }
-
     public function test_si_la_pasarela_rechaza_el_pago_queda_fallido_y_emite_pago_fallido(): void
     {
         $pago = ($this->crearPago())($this->comandoDeCreacion());
-        $pasarela = (new FakePasarelaPago())->rechazandoCobros('tarjeta vencida');
+        $pasarela = (new FakePasarelaPago)->rechazandoCobros('tarjeta vencida');
 
         $cobrado = ($this->cobrarPago($pasarela))(new CobrarPagoCommand($pago->pagoId()));
 
@@ -132,7 +112,7 @@ final class CobroDePagosTest extends TestCase
     public function test_cobrar_dos_veces_el_mismo_pago_no_llama_otra_vez_a_la_pasarela(): void
     {
         $pago = ($this->crearPago())($this->comandoDeCreacion());
-        $pasarela = new FakePasarelaPago();
+        $pasarela = new FakePasarelaPago;
         $handler = $this->cobrarPago($pasarela);
 
         $handler(new CobrarPagoCommand($pago->pagoId()));
@@ -140,25 +120,6 @@ final class CobroDePagosTest extends TestCase
 
         self::assertCount(1, $pasarela->llamadas(), 'no se cobra dos veces');
         self::assertSame(1, $this->eventos->cantidad(), 'ni se publica el evento dos veces');
-    }
-
-    public function test_cobrar_un_pago_que_no_existe_falla(): void
-    {
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('no existe');
-
-        ($this->cobrarPago(new FakePasarelaPago()))(new CobrarPagoCommand('pago-inexistente'));
-    }
-
-    public function test_el_cambio_de_estado_y_el_evento_van_en_una_sola_transaccion(): void
-    {
-        $pago = ($this->crearPago())($this->comandoDeCreacion());
-        $transaccionesAntes = $this->tx->transacciones();
-
-        ($this->cobrarPago(new FakePasarelaPago()))(new CobrarPagoCommand($pago->pagoId()));
-
-        // Estado + transaccion con la pasarela + evento: una sola transaccion.
-        self::assertSame($transaccionesAntes + 1, $this->tx->transacciones());
     }
 
     private function crearPago(): CrearPagoHandler

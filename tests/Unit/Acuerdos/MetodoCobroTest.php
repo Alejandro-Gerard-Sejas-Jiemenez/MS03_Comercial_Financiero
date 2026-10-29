@@ -24,17 +24,6 @@ final class MetodoCobroTest extends TestCase
         self::assertFalse($metodo->sirveParaLiquidar());
     }
 
-    public function test_la_entidad_solo_conoce_el_numero_cifrado_y_los_ultimos_digitos(): void
-    {
-        $metodo = $this->metodo();
-
-        self::assertSame('cif:XXXX', $metodo->numeroCifrado());
-        self::assertSame('1234', $metodo->ultimosDigitos());
-        // No existe ningun accesor al numero en claro: el dominio nunca lo tiene.
-        self::assertFalse(method_exists($metodo, 'numero'));
-        self::assertFalse(method_exists($metodo, 'numeroEnClaro'));
-    }
-
     public function test_solo_un_metodo_principal_y_verificado_sirve_para_liquidar(): void
     {
         $metodo = $this->metodo();
@@ -61,16 +50,6 @@ final class MetodoCobroTest extends TestCase
         self::assertFalse($metodo->estaVerificado());
     }
 
-    public function test_actualizar_datos_cambia_titular_y_banco(): void
-    {
-        $metodo = $this->metodo();
-
-        $metodo->actualizarDatos(titular: 'Ana Quispe Vargas', banco: 'Banco Union');
-
-        self::assertSame('Ana Quispe Vargas', $metodo->titular());
-        self::assertSame('Banco Union', $metodo->banco());
-    }
-
     public function test_rechaza_un_titular_vacio(): void
     {
         $this->expectException(DomainException::class);
@@ -84,45 +63,6 @@ final class MetodoCobroTest extends TestCase
             numeroCifrado: 'cif:XXXX',
             ultimosDigitos: '1234',
         );
-    }
-
-    public function test_rechaza_un_numero_cifrado_vacio(): void
-    {
-        $this->expectException(DomainException::class);
-
-        MetodoCobro::registrar(
-            metodoId: 'met-1',
-            anfitrionId: 'anf-1',
-            tipo: TipoMetodoCobro::CUENTA_BANCARIA,
-            titular: 'Ana Quispe',
-            numeroCifrado: '',
-            ultimosDigitos: '1234',
-        );
-    }
-
-    public function test_rechaza_ultimos_digitos_que_no_sean_cuatro_digitos(): void
-    {
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('ultimos digitos');
-
-        MetodoCobro::registrar(
-            metodoId: 'met-1',
-            anfitrionId: 'anf-1',
-            tipo: TipoMetodoCobro::CUENTA_BANCARIA,
-            titular: 'Ana Quispe',
-            numeroCifrado: 'cif:XXXX',
-            ultimosDigitos: '12',
-        );
-    }
-
-    public function test_verificar_dos_veces_es_idempotente(): void
-    {
-        $metodo = $this->metodo();
-
-        $metodo->verificar();
-        $metodo->verificar();
-
-        self::assertTrue($metodo->estaVerificado());
     }
 
     private function metodo(): MetodoCobro

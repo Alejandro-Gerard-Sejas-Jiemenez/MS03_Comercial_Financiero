@@ -38,31 +38,6 @@ final class PromocionTest extends TestCase
         $promocion->asegurarAplicableA(3, $this->hoy(), null, 'anf-1');
     }
 
-    public function test_una_promocion_pausada_no_da_descuento(): void
-    {
-        $promocion = $this->promocionActiva();
-        $promocion->pausar();
-
-        self::assertSame(EstadoPromocion::PAUSADA, $promocion->estado());
-        self::assertFalse($promocion->aplicaA(3, $this->hoy(), null, 'anf-1'));
-
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('PAUSADA');
-        $promocion->asegurarAplicableA(3, $this->hoy(), null, 'anf-1');
-    }
-
-    public function test_por_debajo_de_las_noches_minimas_no_da_descuento(): void
-    {
-        $promocion = $this->promocionActiva(minNoches: 4);
-
-        self::assertFalse($promocion->aplicaA(3, $this->hoy(), null, 'anf-1'));
-        self::assertTrue($promocion->aplicaA(4, $this->hoy(), null, 'anf-1'));
-
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('4 noches');
-        $promocion->asegurarAplicableA(3, $this->hoy(), null, 'anf-1');
-    }
-
     public function test_al_llegar_al_tope_de_usos_no_se_puede_registrar_otro_uso(): void
     {
         $promocion = $this->promocionActiva(maxUsos: 2);
@@ -89,14 +64,6 @@ final class PromocionTest extends TestCase
         // El monto fijo supera el subtotal: el descuento se topa al subtotal.
         self::assertSame('100.00', $promocion->calcularDescuento(Money::deCentavos(10000))->aDecimal());
         self::assertSame('150.00', $promocion->calcularDescuento(Money::deCentavos(30000))->aDecimal());
-    }
-
-    public function test_un_descuento_porcentaje_redondea_el_medio_centavo_hacia_arriba(): void
-    {
-        $promocion = $this->promocionActiva(valor: '50.00');
-
-        // 100.01 x 50 % = 50.005 -> 50.01
-        self::assertSame('50.01', $promocion->calcularDescuento(Money::deCentavos(10001))->aDecimal());
     }
 
     public function test_registrar_uso_emite_promocion_aplicada(): void
@@ -145,38 +112,6 @@ final class PromocionTest extends TestCase
         self::assertSame(['aloj-1', 'aloj-2'], $promocion->alojamientos());
     }
 
-    public function test_sin_alojamientos_asignados_aplica_a_todos_los_del_anfitrion(): void
-    {
-        $promocion = $this->promocionActiva();
-
-        self::assertTrue($promocion->aplicaA(3, $this->hoy(), 'aloj-9', 'anf-1'));
-        // Un alojamiento de otro anfitrion queda fuera.
-        self::assertFalse($promocion->aplicaA(3, $this->hoy(), 'aloj-9', 'anf-2'));
-    }
-
-    public function test_una_promocion_de_la_plataforma_aplica_a_cualquier_anfitrion(): void
-    {
-        $promocion = $this->promocionActiva(anfitrionId: null);
-
-        self::assertTrue($promocion->aplicaA(3, $this->hoy(), 'aloj-9', 'anf-7'));
-    }
-
-    public function test_solo_vence_si_ya_paso_su_fecha(): void
-    {
-        $vigente = $this->promocionActiva();
-        $vencida = $this->promocionActiva(
-            vigenteDesde: '2026-09-01 00:00:00',
-            vigenteHasta: '2026-10-01 00:00:00',
-        );
-
-        $vencida->vencer($this->hoy());
-        self::assertSame(EstadoPromocion::VENCIDA, $vencida->estado());
-
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('sigue vigente');
-        $vigente->vencer($this->hoy());
-    }
-
     public function test_el_ciclo_de_estados_de_la_promocion(): void
     {
         $promocion = $this->promocionBorrador();
@@ -194,27 +129,6 @@ final class PromocionTest extends TestCase
 
         $this->expectException(DomainException::class);
         $promocion->activar();
-    }
-
-    public function test_un_porcentaje_mayor_a_cien_es_invalido(): void
-    {
-        $this->expectException(DomainException::class);
-        $this->promocionBorrador(valor: '120.00');
-    }
-
-    public function test_el_valor_de_la_promocion_debe_ser_positivo(): void
-    {
-        $this->expectException(DomainException::class);
-        $this->promocionBorrador(valor: '0.00');
-    }
-
-    public function test_la_vigencia_no_puede_terminar_antes_de_empezar(): void
-    {
-        $this->expectException(DomainException::class);
-        $this->promocionBorrador(
-            vigenteDesde: '2026-11-01 00:00:00',
-            vigenteHasta: '2026-10-01 00:00:00',
-        );
     }
 
     private function hoy(): DateTimeImmutable

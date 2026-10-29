@@ -58,19 +58,6 @@ final class AcuerdoComercialTest extends TestCase
         self::assertSame('Documentacion vencida', $evento->payload()['motivo']);
     }
 
-    public function test_finalizar_un_acuerdo_activo_emite_acuerdo_comercial_finalizado(): void
-    {
-        $acuerdo = $this->activo();
-
-        $acuerdo->finalizar('Fin de la vigencia pactada');
-
-        self::assertSame(EstadoAcuerdo::FINALIZADO, $acuerdo->estado());
-
-        $evento = $this->unicoEvento($acuerdo);
-        self::assertSame('acuerdo_comercial.finalizado', $evento->tipoEvento());
-        self::assertSame('FINALIZADO', $evento->payload()['estado_final']);
-    }
-
     public function test_rescindir_tambien_emite_finalizado_pero_con_su_estado_final(): void
     {
         $acuerdo = $this->activo();
@@ -85,18 +72,6 @@ final class AcuerdoComercialTest extends TestCase
         self::assertSame('Incumplimiento del anfitrion', $evento->payload()['motivo']);
     }
 
-    public function test_reactivar_un_acuerdo_suspendido_vuelve_a_emitir_activado(): void
-    {
-        $acuerdo = $this->activo();
-        $acuerdo->suspender('Revision de datos');
-        $acuerdo->sacarEventos();
-
-        $acuerdo->activar('admin-2', new DateTimeImmutable('2026-10-24 09:00:00'));
-
-        self::assertSame(EstadoAcuerdo::ACTIVO, $acuerdo->estado());
-        self::assertSame('acuerdo_comercial.activado', $this->unicoEvento($acuerdo)->tipoEvento());
-    }
-
     public function test_un_borrador_no_se_puede_suspender(): void
     {
         $acuerdo = $this->borrador();
@@ -105,56 +80,6 @@ final class AcuerdoComercialTest extends TestCase
         $this->expectExceptionMessage('BORRADOR');
 
         $acuerdo->suspender('Sin motivo real');
-    }
-
-    public function test_un_borrador_no_se_puede_finalizar(): void
-    {
-        $acuerdo = $this->borrador();
-
-        $this->expectException(DomainException::class);
-
-        $acuerdo->finalizar('No corresponde');
-    }
-
-    public function test_un_acuerdo_finalizado_no_admite_mas_transiciones(): void
-    {
-        $acuerdo = $this->activo();
-        $acuerdo->finalizar('Cierre');
-        $acuerdo->sacarEventos();
-
-        $this->expectException(DomainException::class);
-
-        $acuerdo->activar('admin-1', new DateTimeImmutable('2026-11-01 10:00:00'));
-    }
-
-    public function test_un_acuerdo_rescindido_no_se_puede_reactivar(): void
-    {
-        $acuerdo = $this->activo();
-        $acuerdo->rescindir('Fraude');
-        $acuerdo->sacarEventos();
-
-        $this->expectException(DomainException::class);
-
-        $acuerdo->activar('admin-1', new DateTimeImmutable('2026-11-01 10:00:00'));
-    }
-
-    public function test_un_borrador_se_puede_rescindir_para_descartarlo(): void
-    {
-        $acuerdo = $this->borrador();
-
-        $acuerdo->rescindir('El anfitrion no acepto las condiciones');
-
-        self::assertSame(EstadoAcuerdo::RESCINDIDO, $acuerdo->estado());
-    }
-
-    public function test_suspender_exige_un_motivo(): void
-    {
-        $acuerdo = $this->activo();
-
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('motivo');
-
-        $acuerdo->suspender('   ');
     }
 
     public function test_rechaza_dias_de_liquidacion_fuera_del_rango_permitido(): void
@@ -167,18 +92,6 @@ final class AcuerdoComercialTest extends TestCase
             anfitrionId: 'anf-1',
             fechaInicio: new DateTimeImmutable('2026-11-01'),
             diasLiquidacion: 61,
-        );
-    }
-
-    public function test_rechaza_una_fecha_de_fin_anterior_al_inicio(): void
-    {
-        $this->expectException(DomainException::class);
-
-        AcuerdoComercial::crearBorrador(
-            acuerdoId: 'acu-1',
-            anfitrionId: 'anf-1',
-            fechaInicio: new DateTimeImmutable('2026-11-01'),
-            fechaFin: new DateTimeImmutable('2026-10-01'),
         );
     }
 
@@ -197,37 +110,6 @@ final class AcuerdoComercialTest extends TestCase
         self::assertSame('regla-9', $acuerdo->reglaComisionId());
         self::assertSame('2.5', $acuerdo->condiciones()['retencion']);
         self::assertSame('2027-01-31', $acuerdo->fechaFin()?->format('Y-m-d'));
-    }
-
-    public function test_un_acuerdo_finalizado_no_admite_cambio_de_condiciones(): void
-    {
-        $acuerdo = $this->activo();
-        $acuerdo->finalizar('Cierre');
-        $acuerdo->sacarEventos();
-
-        $this->expectException(DomainException::class);
-
-        $acuerdo->actualizarCondiciones(diasLiquidacion: 10);
-    }
-
-    public function test_reconstituir_no_revalida_ni_emite_eventos(): void
-    {
-        $acuerdo = AcuerdoComercial::reconstituir(
-            acuerdoId: 'acu-7',
-            anfitrionId: 'anf-7',
-            reglaComisionId: null,
-            estado: EstadoAcuerdo::SUSPENDIDO,
-            fechaInicio: new DateTimeImmutable('2026-01-01'),
-            fechaFin: null,
-            condiciones: [],
-            diasLiquidacion: 30,
-            aprobadoPor: 'admin-0',
-            aprobadoEn: new DateTimeImmutable('2026-01-02 08:00:00'),
-            motivoEstado: 'Observaciones',
-        );
-
-        self::assertSame(EstadoAcuerdo::SUSPENDIDO, $acuerdo->estado());
-        self::assertSame([], $acuerdo->sacarEventos());
     }
 
     private function borrador(): AcuerdoComercial

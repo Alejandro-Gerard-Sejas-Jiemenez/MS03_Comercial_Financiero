@@ -44,7 +44,7 @@ final class InMemoryPromocionRepository implements PromocionRepository
 
     public function guardar(Promocion $promocion): void
     {
-        ++$this->guardadas;
+        $this->guardadas++;
         $this->promociones[$promocion->promocionId()] = $promocion;
     }
 

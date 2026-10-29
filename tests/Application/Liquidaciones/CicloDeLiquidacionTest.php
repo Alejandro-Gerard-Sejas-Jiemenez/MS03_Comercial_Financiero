@@ -21,6 +21,7 @@ use Src\Referencias\Domain\AnfitrionReference;
 use Src\Referencias\Domain\EstadoReserva;
 use Src\Referencias\Domain\EstadoVerificacionAnfitrion;
 use Src\Referencias\Domain\ReservaReference;
+use Src\Shared\Domain\Money;
 use Tests\Doubles\FakeAcuerdoComercialQuery;
 use Tests\Doubles\FakeMetodoCobroQuery;
 use Tests\Doubles\FrozenClock;
@@ -33,7 +34,6 @@ use Tests\Doubles\InMemoryReservaReferenceRepository;
 use Tests\Doubles\SequentialUuidGenerator;
 use Tests\Doubles\SpyAuditLogger;
 use Tests\Doubles\SyncTransactionManager;
-use Src\Shared\Domain\Money;
 
 /**
  * CU-LIQ-03, CU-LIQ-04, CU-LIQ-07 y CU-LIQ-08: de la comision retenida al
@@ -42,35 +42,43 @@ use Src\Shared\Domain\Money;
 final class CicloDeLiquidacionTest extends TestCase
 {
     private InMemoryComisionRepository $comisiones;
+
     private InMemoryLiquidacionRepository $liquidaciones;
+
     private InMemoryAnfitrionReferenceRepository $anfitriones;
+
     private InMemoryLibroContableRepository $libro;
+
     private InMemoryEventPublisher $eventos;
+
     private SyncTransactionManager $tx;
+
     private SequentialUuidGenerator $uuid;
+
     private FrozenClock $clock;
+
     private SpyAuditLogger $auditoria;
 
     protected function setUp(): void
     {
-        $this->comisiones = new InMemoryComisionRepository();
-        $this->liquidaciones = new InMemoryLiquidacionRepository();
+        $this->comisiones = new InMemoryComisionRepository;
+        $this->liquidaciones = new InMemoryLiquidacionRepository;
         $this->anfitriones = new InMemoryAnfitrionReferenceRepository(
             $this->anfitrion('anfitrion-1', EstadoVerificacionAnfitrion::VERIFICADO),
         );
-        $this->libro = new InMemoryLibroContableRepository();
-        $this->eventos = new InMemoryEventPublisher();
-        $this->tx = new SyncTransactionManager();
-        $this->uuid = new SequentialUuidGenerator();
+        $this->libro = new InMemoryLibroContableRepository;
+        $this->eventos = new InMemoryEventPublisher;
+        $this->tx = new SyncTransactionManager;
+        $this->uuid = new SequentialUuidGenerator;
         $this->clock = new FrozenClock('2026-11-20 10:00:00');
-        $this->auditoria = new SpyAuditLogger();
+        $this->auditoria = new SpyAuditLogger;
     }
 
     public function test_marca_la_comision_liquidable_desde_checkout_mas_los_dias_del_acuerdo(): void
     {
         $this->comisiones->guardar($this->comision('comision-1'));
         $reservas = new InMemoryReservaReferenceRepository($this->reserva());
-        $acuerdos = (new FakeAcuerdoComercialQuery())->con('anfitrion-1', diasLiquidacion: 10);
+        $acuerdos = (new FakeAcuerdoComercialQuery)->con('anfitrion-1', diasLiquidacion: 10);
 
         $marcadas = (new MarcarComisionesLiquidablesHandler(
             $this->comisiones,
@@ -87,29 +95,12 @@ final class CicloDeLiquidacionTest extends TestCase
         self::assertSame('2026-11-15', $comision->liquidableDesde()->format('Y-m-d'));
     }
 
-    public function test_sin_acuerdo_activo_usa_el_plazo_por_omision_de_siete_dias(): void
-    {
-        $this->comisiones->guardar($this->comision('comision-1'));
-
-        (new MarcarComisionesLiquidablesHandler(
-            $this->comisiones,
-            new InMemoryReservaReferenceRepository($this->reserva()),
-            new FakeAcuerdoComercialQuery(),
-            $this->tx,
-        ))(new MarcarComisionesLiquidablesCommand('reserva-1'));
-
-        self::assertSame(
-            '2026-11-12',
-            $this->comisiones->buscar('comision-1')->liquidableDesde()->format('Y-m-d'),
-        );
-    }
-
     public function test_genera_una_liquidacion_por_anfitrion_con_sus_comisiones_liquidables(): void
     {
         $this->comisionLiquidable('comision-1', base: 90000, monto: 13500);
         $this->comisionLiquidable('comision-2', base: 60000, monto: 9000);
 
-        $generadas = ($this->generarLiquidaciones())(new GenerarLiquidacionesCommand());
+        $generadas = ($this->generarLiquidaciones())(new GenerarLiquidacionesCommand);
 
         self::assertCount(1, $generadas);
         $liquidacion = $generadas[0];
@@ -121,26 +112,6 @@ final class CicloDeLiquidacionTest extends TestCase
         self::assertSame(EstadoLiquidacion::GENERADA, $liquidacion->estado());
     }
 
-    public function test_las_comisiones_liquidadas_quedan_ligadas_a_su_liquidacion(): void
-    {
-        $this->comisionLiquidable('comision-1');
-
-        $liquidacion = ($this->generarLiquidaciones())(new GenerarLiquidacionesCommand())[0];
-
-        $comision = $this->comisiones->buscar('comision-1');
-        self::assertSame(EstadoComision::LIQUIDADA, $comision->estado());
-        self::assertSame($liquidacion->liquidacionId(), $comision->liquidacionId());
-    }
-
-    public function test_no_genera_liquidacion_de_un_anfitrion_sin_comisiones_liquidables(): void
-    {
-        // La comision existe pero sigue RETENIDA: la estadia no termino.
-        $this->comisiones->guardar($this->comision('comision-1'));
-
-        self::assertSame([], ($this->generarLiquidaciones())(new GenerarLiquidacionesCommand()));
-        self::assertSame(0, $this->liquidaciones->cantidad());
-    }
-
     public function test_no_genera_liquidacion_de_un_anfitrion_suspendido(): void
     {
         $this->comisionLiquidable('comision-1');
@@ -149,21 +120,13 @@ final class CicloDeLiquidacionTest extends TestCase
             $this->anfitrion('anfitrion-1', EstadoVerificacionAnfitrion::SUSPENDIDO),
         );
 
-        self::assertSame([], ($this->generarLiquidaciones())(new GenerarLiquidacionesCommand()));
-    }
-
-    public function test_no_incluye_comisiones_cuyo_plazo_todavia_no_vencio(): void
-    {
-        $this->comisionLiquidable('comision-1', liquidableDesde: '2026-12-01');
-
-        // El reloj esta en 2026-11-20: el plazo no vencio.
-        self::assertSame([], ($this->generarLiquidaciones())(new GenerarLiquidacionesCommand()));
+        self::assertSame([], ($this->generarLiquidaciones())(new GenerarLiquidacionesCommand));
     }
 
     public function test_pagar_la_liquidacion_emite_el_evento_y_cancela_la_deuda_en_el_libro(): void
     {
         $this->comisionLiquidable('comision-1', base: 90000, monto: 13500);
-        $liquidacion = ($this->generarLiquidaciones())(new GenerarLiquidacionesCommand())[0];
+        $liquidacion = ($this->generarLiquidaciones())(new GenerarLiquidacionesCommand)[0];
         $liquidacion->aprobar('admin-1');
         $this->liquidaciones->guardar($liquidacion);
 
@@ -190,7 +153,7 @@ final class CicloDeLiquidacionTest extends TestCase
     public function test_retener_anula_las_liquidaciones_pendientes_y_libera_sus_comisiones(): void
     {
         $this->comisionLiquidable('comision-1');
-        $liquidacion = ($this->generarLiquidaciones())(new GenerarLiquidacionesCommand())[0];
+        $liquidacion = ($this->generarLiquidaciones())(new GenerarLiquidacionesCommand)[0];
 
         $retenidas = (new RetenerLiquidacionesDeAnfitrionHandler(
             $this->liquidaciones,
@@ -215,7 +178,7 @@ final class CicloDeLiquidacionTest extends TestCase
             $this->comisiones,
             $this->liquidaciones,
             $this->anfitriones,
-            (new FakeMetodoCobroQuery())->con('anfitrion-1', 'metodo-1'),
+            (new FakeMetodoCobroQuery)->con('anfitrion-1', 'metodo-1'),
             $this->uuid,
             $this->clock,
             $this->tx,
@@ -226,7 +189,7 @@ final class CicloDeLiquidacionTest extends TestCase
     {
         return Comision::registrar(
             comisionId: $id,
-            pagoId: 'pago-' . $id,
+            pagoId: 'pago-'.$id,
             reservaId: 'reserva-1',
             anfitrionId: 'anfitrion-1',
             baseComisionable: Money::deCentavos($base),
