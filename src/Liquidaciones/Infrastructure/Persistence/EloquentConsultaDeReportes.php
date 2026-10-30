@@ -75,7 +75,8 @@ final class EloquentConsultaDeReportes implements ConsultaDeReportes
         // para lo que existe: agrupar sin preguntarle nada a MS-01 ni a MS-02.
         return DB::table('pago')
             ->join('ref_reserva', 'ref_reserva.reserva_id', '=', 'pago.reserva_id')
-            ->leftJoin('comision', 'comision.pago_id', '=', 'pago.pago_id')
+            // Una comision revertida (por reembolso) ya no es ingreso: igual que en el resumen.
+            ->leftJoin('comision', fn ($join) => $join->on('comision.pago_id', '=', 'pago.pago_id')->where('comision.estado', '<>', 'REVERTIDA'))
             ->selectRaw('
                 ref_reserva.categoria_alojamiento AS categoria,
                 COALESCE(SUM(pago.monto_total), 0) AS total_cobrado,

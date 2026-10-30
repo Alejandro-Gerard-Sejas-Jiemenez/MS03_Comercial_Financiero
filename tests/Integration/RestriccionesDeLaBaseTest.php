@@ -6,6 +6,7 @@ namespace Tests\Integration;
 
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Src\Liquidaciones\Infrastructure\Persistence\EloquentConsultaDeReportes;
 use Src\Pagos\Domain\MetodoPago;
 use Src\Pagos\Domain\Pago;
 use Src\Pagos\Infrastructure\Persistence\EloquentPagoRepository;
@@ -231,6 +232,32 @@ final class RestriccionesDeLaBaseTest extends TestCase
         $pago->aplicarReembolso(Money::deCentavos(1000));
         $repositorio->guardar($pago);
         self::assertSame($primera, DB::table('pago')->where('pago_id', $pago->pagoId())->value('pagado_en'), 'guardados posteriores no la pisan');
+    }
+
+    public function test_el_reporte_por_categoria_no_cuenta_la_comision_revertida(): void
+    {
+        $pagoId = $this->insertarPago();
+        DB::table('comision')->insert([
+            'comision_id' => (string) DB::selectOne('SELECT gen_random_uuid() AS id')->id,
+            'pago_id' => $pagoId,
+            'reserva_id' => $this->reservaId,
+            'anfitrion_id' => $this->anfitrionId,
+            'base_comisionable' => '1000.00',
+            'porcentaje_aplicado' => '10',
+            'monto_comision' => '100.00',
+            'monto_neto_anfitrion' => '900.00',
+            'moneda' => 'BOB',
+            'estado' => 'REVERTIDA',
+        ]);
+        DB::table('pago')->where('pago_id', $pagoId)->update(['estado' => 'REEMBOLSADO']);
+
+        $filas = (new EloquentConsultaDeReportes)->ingresosPorCategoria(
+            new \DateTimeImmutable('2000-01-01'),
+            new \DateTimeImmutable('2100-01-01'),
+        );
+
+        self::assertSame(0, $filas[0]->totalComisiones->centavos(), 'la comision revertida no es ingreso');
+        self::assertSame(1, $filas[0]->cantidadPagos);
     }
 
     public function test_un_porcentaje_de_comision_mayor_a_cien_se_rechaza(): void
