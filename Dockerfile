@@ -10,9 +10,11 @@ RUN composer install --no-dev --no-interaction --no-progress --no-scripts \
     --prefer-dist --optimize-autoloader --ignore-platform-req=ext-sockets
 
 FROM php:8.2-cli-alpine
-RUN apk add --no-cache libpq postgresql-dev \
+# linux-headers: la extension sockets no compila en Alpine sin ellas.
+RUN apk add --no-cache libpq \
+    && apk add --no-cache --virtual .build-deps postgresql-dev linux-headers \
     && docker-php-ext-install pdo_pgsql bcmath sockets pcntl \
-    && apk del postgresql-dev
+    && apk del .build-deps
 
 WORKDIR /var/www
 COPY --from=vendor /app/vendor ./vendor

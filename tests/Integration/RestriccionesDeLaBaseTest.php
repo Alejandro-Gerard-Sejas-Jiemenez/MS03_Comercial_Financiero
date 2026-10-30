@@ -6,6 +6,10 @@ namespace Tests\Integration;
 
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Src\Pagos\Domain\MetodoPago;
+use Src\Pagos\Domain\Pago;
+use Src\Pagos\Infrastructure\Persistence\EloquentPagoRepository;
+use Src\Shared\Domain\Money;
 use Tests\TestCase;
 use Throwable;
 
@@ -200,6 +204,33 @@ final class RestriccionesDeLaBaseTest extends TestCase
             '-10.00',
             DB::table('conciliacion')->where('pasarela', 'FAKE')->value('diferencia'),
         );
+    }
+
+    public function test_guardar_un_pago_capturado_estampa_pagado_en_una_sola_vez(): void
+    {
+        $repositorio = new EloquentPagoRepository;
+        $pago = Pago::crear(
+            pagoId: '55555555-5555-4555-8555-555555555555',
+            reservaId: $this->reservaId,
+            clienteId: $this->clienteId,
+            anfitrionId: $this->anfitrionId,
+            subtotal: Money::deCentavos(100000),
+            descuento: Money::deCentavos(0),
+            cargoServicio: Money::deCentavos(5000),
+            metodo: MetodoPago::QR,
+            idempotencyKey: 'integracion-pagado-en',
+        );
+        $repositorio->guardar($pago);
+        self::assertNull(DB::table('pago')->where('pago_id', $pago->pagoId())->value('pagado_en'));
+
+        $pago->capturar('ref-1');
+        $repositorio->guardar($pago);
+        $primera = DB::table('pago')->where('pago_id', $pago->pagoId())->value('pagado_en');
+        self::assertNotNull($primera, 'al capturar se estampa la fecha de cobro');
+
+        $pago->aplicarReembolso(Money::deCentavos(1000));
+        $repositorio->guardar($pago);
+        self::assertSame($primera, DB::table('pago')->where('pago_id', $pago->pagoId())->value('pagado_en'), 'guardados posteriores no la pisan');
     }
 
     public function test_un_porcentaje_de_comision_mayor_a_cien_se_rechaza(): void

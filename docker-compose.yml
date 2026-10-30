@@ -45,18 +45,19 @@ services:
   #   APP_KEY=base64:... docker compose up -d --build ms03
   ms03: &ms03
     build: .
+    image: ms03:local
     container_name: ms03-api
     depends_on:
       postgres:
         condition: service_healthy
     environment: &ms03_env
-      APP_KEY: ${APP_KEY:?define APP_KEY (php artisan key:generate --show)}
+      APP_KEY: ${APP_KEY:-}
       APP_ENV: production
       APP_DEBUG: "false"
       DB_CONNECTION: pgsql
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_DATABASE: ms03_comercial
+      DB_DATABASE: ${DB_DATABASE:-ms03_comercial}
       DB_USERNAME: postgres
       DB_PASSWORD: postgres
       DB_SEARCH_PATH: comercial,public

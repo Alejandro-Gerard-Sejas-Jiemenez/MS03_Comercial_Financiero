@@ -5,9 +5,9 @@ Laravel 12 / PHP 8.2 / PostgreSQL 16 (docker-compose, puerto 5433). Clean Archit
 ## Estado
 
 - 7 paquetes: `Shared`, `Referencias`, `Monetizacion`, `Acuerdos`, `Promociones`, `Pagos`, `Liquidaciones`. 35 casos de uso, 19 tablas en el esquema `comercial`, 10 migraciones.
-- 124 tests (109 + 15 de integracion que requieren PostgreSQL), 633 aserciones; P1, P2 (REST + JOBs), P4 (RabbitMQ: broker, consumidores con Inbox) y P3 (`openapi.yaml`, se regenera con `php artisan openapi:generar`) hechos. Suite reducida a proposito (antes 248): un test por regla relevante.
-- `app/Providers/ComercialServiceProvider.php` enlaza puertos con implementaciones. Broker hoy = `LogMessageBroker`; pasarela = `PasarelaPagoSimulada`.
-- P5 hecho (suite `Contract`, CI, Dockerfile) pero sin verificar en GitHub ni con el daemon de Docker. Faltan: probar RabbitMQ/Keycloak/PostgreSQL reales, esquemas de contrato para el resto de eventos, servidor de produccion.
+- 126 tests (110 + 16 de integracion que requieren PostgreSQL), 635 aserciones; P1, P2 (REST + JOBs), P4 (RabbitMQ: broker, consumidores con Inbox) y P3 (`openapi.yaml`, se regenera con `php artisan openapi:generar`) hechos. Suite reducida a proposito (antes 248): un test por regla relevante.
+- `app/Providers/ComercialServiceProvider.php` enlaza puertos con implementaciones. Broker = `LogMessageBroker` por defecto, `RabbitMqMessageBroker` con `COMERCIAL_BROKER_DRIVER=rabbitmq`; pasarela = `PasarelaPagoSimulada`.
+- P5 hecho. Verificado con PostgreSQL, RabbitMQ y Keycloak reales en Docker (ver L9 en `odd/tasks/ms03-presentacion.md`). Sin verificar: el workflow de GitHub Actions. Faltan: esquemas de contrato para el resto de eventos, servidor de produccion (hoy `artisan serve`), reproceso de `comercial.muertos`.
 
 ## Reglas que no se rompen
 

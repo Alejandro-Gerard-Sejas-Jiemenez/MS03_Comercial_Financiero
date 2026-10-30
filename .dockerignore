@@ -14,3 +14,4 @@ storage/framework/sessions/*
 storage/framework/views/*
 tests
 odd
+bootstrap/cache/*.php

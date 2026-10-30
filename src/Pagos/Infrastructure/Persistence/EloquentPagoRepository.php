@@ -6,7 +6,6 @@ namespace Src\Pagos\Infrastructure\Persistence;
 
 use DateTimeImmutable;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\DB;
 use Src\Pagos\Domain\CriterioDePagos;
 use Src\Pagos\Domain\EstadoPago;
 use Src\Pagos\Domain\EstadoReembolso;
@@ -40,6 +39,11 @@ final class EloquentPagoRepository implements PagoRepository
         return $fila === null ? null : $this->aEntidad($fila);
     }
 
+    private function seCobro(Pago $pago): bool
+    {
+        return in_array($pago->estado(), [EstadoPago::CAPTURADO, EstadoPago::REEMBOLSADO_PARCIAL, EstadoPago::REEMBOLSADO], true);
+    }
+
     public function buscarVivoPorReserva(string $reservaId): ?Pago
     {
         $fila = PagoModel::query()
@@ -52,6 +56,10 @@ final class EloquentPagoRepository implements PagoRepository
 
     public function guardar(Pago $pago): void
     {
+        // La fecha de cobro se estampa una vez, al capturar, y no se pisa en guardados posteriores.
+        $pagadoEn = PagoModel::query()->whereKey($pago->pagoId())->value('pagado_en')
+            ?? ($this->seCobro($pago) ? now() : null);
+
         PagoModel::query()->updateOrCreate(
             ['pago_id' => $pago->pagoId()],
             [
@@ -70,7 +78,7 @@ final class EloquentPagoRepository implements PagoRepository
                 'idempotency_key' => $pago->idempotencyKey(),
                 'saga_id' => $pago->sagaId(),
                 // `pagado_en` se sella cuando el dinero entro de verdad.
-                'pagado_en' => $pago->estaCapturado() ? DB::raw('now()') : null,
+                'pagado_en' => $pagadoEn,
             ],
         );
     }

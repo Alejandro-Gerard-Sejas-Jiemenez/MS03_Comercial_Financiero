@@ -72,13 +72,18 @@ final class RegistrarComisionHandler
             acuerdoId: $acuerdo?->acuerdoId,
         );
 
+        // El cargo de servicio del asiento es el que el cliente PAGO (total - subtotal + descuento),
+        // no el que hoy dicten las reglas: si la regla cambio o falta, el libro igual debe cuadrar
+        // con el dinero que de verdad entro por la pasarela.
+        $cargoCobrado = Money::deCentavos($comando->totalCentavos - $comando->subtotalCentavos + $comando->descuentoCentavos, $comando->moneda);
+
         $asiento = Asiento::porPagoCapturado(
             asientoId: $this->uuid->generar(),
             pagoId: $comando->pagoId,
             anfitrionId: $comando->anfitrionId,
             total: Money::deCentavos($comando->totalCentavos, $comando->moneda),
             comision: $desglose->montoComision,
-            cargoServicio: $desglose->cargoServicio,
+            cargoServicio: $cargoCobrado,
             netoAnfitrion: $desglose->netoAnfitrion,
         );
 

@@ -6,10 +6,10 @@ namespace Src\Shared\Presentation\Console;
 
 use Illuminate\Console\Command;
 use PhpAmqpLib\Channel\AMQPChannel;
-use PhpAmqpLib\Connection\AMQPConnectionConfig;
-use PhpAmqpLib\Connection\AMQPConnectionFactory;
 use PhpAmqpLib\Exception\AMQPTimeoutException;
 use PhpAmqpLib\Message\AMQPMessage;
+use PhpAmqpLib\Wire\AMQPTable;
+use Src\Shared\Infrastructure\Messaging\ConexionRabbitMq;
 use Src\Shared\Presentation\Messaging\ConsumidorDeEventos;
 use Throwable;
 
@@ -27,6 +27,9 @@ final class ConsumirMensajesCommand extends Command
 {
     private const COLA_INTERNA = 'comercial.interno';
 
+    /** Aqui terminan los mensajes que fallaron, con el error en el header `x-error`. */
+    private const COLA_MUERTOS = 'comercial.muertos';
+
     protected $signature = 'mensajeria:consumir {--una-vez : procesa lo que hay y termina (para pruebas y cron)}';
 
     protected $description = 'Consume los eventos de RabbitMQ que MS-03 sabe manejar';
@@ -34,14 +37,7 @@ final class ConsumirMensajesCommand extends Command
     public function handle(ConsumidorDeEventos $consumidor): int
     {
         $config = (array) config('comercial.rabbitmq');
-        $conexion = AMQPConnectionFactory::create(
-            (new AMQPConnectionConfig)
-                ->setHost((string) $config['host'])
-                ->setPort((int) $config['port'])
-                ->setUser((string) $config['usuario'])
-                ->setPassword((string) $config['password'])
-                ->setIsLazy(true),
-        );
+        $conexion = ConexionRabbitMq::desde($config);
         $canal = $conexion->channel();
         $canal->basic_qos(0, 10, false);
 
@@ -54,8 +50,8 @@ final class ConsumirMensajesCommand extends Command
             if ($cola !== self::COLA_INTERNA) {
                 $canal->queue_declare($cola, false, true, false, false);
             }
-            $canal->basic_consume($cola, '', false, false, false, false, function (AMQPMessage $m) use ($consumidor, $cola): void {
-                $this->atender($consumidor, $m, $cola);
+            $canal->basic_consume($cola, '', false, false, false, false, function (AMQPMessage $m) use ($consumidor, $cola, $canal): void {
+                $this->atender($consumidor, $m, $cola, $canal);
             });
         }
         $this->info('Escuchando: '.implode(', ', $colas));
@@ -80,6 +76,7 @@ final class ConsumirMensajesCommand extends Command
     /** @param list<string> $eventos */
     private function declararInterna(AMQPChannel $canal, string $exchange, array $eventos): void
     {
+        $canal->queue_declare(self::COLA_MUERTOS, false, true, false, false);
         $canal->queue_declare(self::COLA_INTERNA, false, true, false, false);
         foreach (['pago.capturado', 'reembolso.procesado'] as $clave) {
             if (in_array($clave, $eventos, true)) {
@@ -88,7 +85,7 @@ final class ConsumirMensajesCommand extends Command
         }
     }
 
-    private function atender(ConsumidorDeEventos $consumidor, AMQPMessage $m, string $cola): void
+    private function atender(ConsumidorDeEventos $consumidor, AMQPMessage $m, string $cola, AMQPChannel $canal): void
     {
         try {
             $mensaje = json_decode($m->getBody(), true, 512, JSON_THROW_ON_ERROR);
@@ -101,7 +98,16 @@ final class ConsumirMensajesCommand extends Command
         } catch (Throwable $e) {
             $this->error("{$cola}: {$e->getMessage()}");
             report($e);
-            $m->nack(false);
+            // No se pierde: va a la cola de muertos con el motivo, para revisarlo y reenviarlo.
+            $canal->basic_publish(new AMQPMessage($m->getBody(), [
+                'delivery_mode' => AMQPMessage::DELIVERY_MODE_PERSISTENT,
+                'application_headers' => new AMQPTable([
+                    'x-error' => mb_substr($e->getMessage(), 0, 500),
+                    'x-cola-origen' => $cola,
+                    'x-routing-key' => $m->getRoutingKey(),
+                ]),
+            ]), '', self::COLA_MUERTOS);
+            $m->ack();
         }
     }
 }

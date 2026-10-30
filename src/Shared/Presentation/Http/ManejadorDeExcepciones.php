@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Src\Shared\Presentation\Http;
 
 use DomainException;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -45,6 +46,9 @@ final class ManejadorDeExcepciones
             $e instanceof DomainException => self::json(422, 'regla_de_negocio', $e->getMessage()),
             $e instanceof InvalidArgumentException => self::json(422, 'dato_invalido', $e->getMessage()),
             $e instanceof ValidationException => self::json(422, 'validacion', (string) collect($e->errors())->flatten()->first()),
+            // La base es la ultima defensa: una clave foranea o unica rota es un conflicto del cliente, no un 500.
+            $e instanceof QueryException && (string) $e->getCode() === '23503' => self::json(422, 'referencia_inexistente', 'Falta una copia local necesaria (anfitrion o reserva sincronizados desde MS-01/MS-02)'),
+            $e instanceof QueryException && (string) $e->getCode() === '23505' => self::json(409, 'conflicto', 'Ya existe un registro con esos datos'),
             $e instanceof BadRequestHttpException => self::json(400, 'solicitud_invalida', $e->getMessage()),
             $e instanceof NotFoundHttpException => self::json(404, 'ruta_no_encontrada', 'La ruta no existe'),
             default => null,

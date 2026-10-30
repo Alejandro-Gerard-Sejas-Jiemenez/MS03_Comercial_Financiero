@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\ServiceProvider;
-use PhpAmqpLib\Connection\AMQPConnectionConfig;
-use PhpAmqpLib\Connection\AMQPConnectionFactory;
 use Src\Acuerdos\Application\Port\AcuerdoComercialQuery;
 use Src\Acuerdos\Application\Port\CifradorDeDatos;
 use Src\Acuerdos\Application\Port\MetodoCobroQuery;
@@ -68,6 +69,7 @@ use Src\Shared\Application\Port\MessageBroker;
 use Src\Shared\Application\Port\TransactionManager;
 use Src\Shared\Application\Port\UuidGenerator;
 use Src\Shared\Domain\OutboxRepository;
+use Src\Shared\Infrastructure\Messaging\ConexionRabbitMq;
 use Src\Shared\Infrastructure\Messaging\LogMessageBroker;
 use Src\Shared\Infrastructure\Messaging\OutboxEventPublisher;
 use Src\Shared\Infrastructure\Messaging\RabbitMqMessageBroker;
@@ -166,6 +168,8 @@ final class ComercialServiceProvider extends ServiceProvider
 
     public function boot(Router $router): void
     {
+        $this->crearEsquemaAntesDeMigrar();
+
         if ($this->app->runningInConsole()) {
             $this->commands([
                 PublicarOutboxCommand::class,
@@ -188,6 +192,32 @@ final class ComercialServiceProvider extends ServiceProvider
                 $this->loadRoutesFrom($archivo);
             }
         }
+    }
+
+    /**
+     * Con `search_path = comercial,public`, si el esquema `comercial` todavia no
+     * existe Laravel crea la tabla `migrations` en `public`, y en la corrida
+     * siguiente no la encuentra (la busca en `comercial`), vuelve a correr todo y
+     * falla con "relation already exists". Crear el esquema antes de migrar lo evita.
+     */
+    private function crearEsquemaAntesDeMigrar(): void
+    {
+        Event::listen(CommandStarting::class, static function (CommandStarting $evento): void {
+            if (! str_starts_with((string) $evento->command, 'migrate') || config('database.default') !== 'pgsql') {
+                return;
+            }
+
+            $esquema = trim(explode(',', (string) config('database.connections.pgsql.search_path'))[0] ?? '');
+            if (preg_match('/^[a-z_][a-z0-9_]*$/', $esquema) !== 1) {
+                return;
+            }
+
+            try {
+                DB::statement("CREATE SCHEMA IF NOT EXISTS {$esquema}");
+            } catch (\Throwable) {
+                // Sin base de datos alcanzable, que lo reporte el propio migrate.
+            }
+        });
     }
 
     /**
@@ -225,14 +255,7 @@ final class ComercialServiceProvider extends ServiceProvider
                 $c = (array) config('comercial.rabbitmq');
 
                 return new RabbitMqMessageBroker(
-                    static fn () => AMQPConnectionFactory::create(
-                        (new AMQPConnectionConfig)
-                            ->setHost((string) $c['host'])
-                            ->setPort((int) $c['port'])
-                            ->setUser((string) $c['usuario'])
-                            ->setPassword((string) $c['password'])
-                            ->setIsLazy(true),
-                    )->channel(),
+                    static fn () => ConexionRabbitMq::desde($c)->channel(),
                     (string) $c['exchange'],
                 );
             }

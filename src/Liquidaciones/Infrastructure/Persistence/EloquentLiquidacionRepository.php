@@ -6,7 +6,6 @@ namespace Src\Liquidaciones\Infrastructure\Persistence;
 
 use DateTimeImmutable;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\DB;
 use Src\Liquidaciones\Domain\EstadoLiquidacion;
 use Src\Liquidaciones\Domain\Liquidacion;
 use Src\Liquidaciones\Domain\LiquidacionRepository;
@@ -26,7 +25,11 @@ final class EloquentLiquidacionRepository implements LiquidacionRepository
 
     public function guardar(Liquidacion $liquidacion): void
     {
-        $esAprobada = $liquidacion->estado() === EstadoLiquidacion::APROBADA;
+        // Las fechas se estampan una vez, al aprobar y al pagar, y no se pisan despues.
+        $previa = LiquidacionModel::query()->whereKey($liquidacion->liquidacionId())->first(['aprobado_en', 'pagado_en']);
+        $aprobadoEn = $previa?->aprobado_en
+            ?? (in_array($liquidacion->estado(), [EstadoLiquidacion::APROBADA, EstadoLiquidacion::PAGADA], true) ? now() : null);
+        $pagadoEn = $previa?->pagado_en ?? ($liquidacion->estaPagada() ? now() : null);
 
         LiquidacionModel::query()->updateOrCreate(
             ['liquidacion_id' => $liquidacion->liquidacionId()],
@@ -42,8 +45,8 @@ final class EloquentLiquidacionRepository implements LiquidacionRepository
                 'moneda' => $liquidacion->moneda(),
                 'estado' => $liquidacion->estado()->value,
                 'aprobado_por' => $liquidacion->aprobadoPor(),
-                'aprobado_en' => $esAprobada ? DB::raw('now()') : null,
-                'pagado_en' => $liquidacion->estaPagada() ? DB::raw('now()') : null,
+                'aprobado_en' => $aprobadoEn,
+                'pagado_en' => $pagadoEn,
                 'referencia_transferencia' => $liquidacion->referenciaTransferencia(),
             ],
         );
