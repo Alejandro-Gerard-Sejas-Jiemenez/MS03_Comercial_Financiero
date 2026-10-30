@@ -23,3 +23,8 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 /context
+
+# Microfrontends
+/frontend/*/node_modules
+/frontend/*/dist
+/frontend/*/.angular
