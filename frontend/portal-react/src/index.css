@@ -1,0 +1,102 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Todo va bajo `.ms03-portal`: el portal convive con el shell y con otros microfrontends en la misma pagina. */
+@layer base {
+  .ms03-portal {
+    @apply min-h-screen bg-surface-secondary font-sans text-ink-primary antialiased;
+    line-height: 1.5;
+  }
+
+  .ms03-portal *,
+  .ms03-portal *::before,
+  .ms03-portal *::after {
+    box-sizing: border-box;
+    border: 0 solid theme('colors.line.DEFAULT');
+  }
+
+  .ms03-portal :is(h1, h2, h3, h4, p, dl, dd, ul) {
+    margin: 0;
+  }
+
+  .ms03-portal :is(h1, h2, h3, h4) {
+    @apply text-ink-primary;
+    line-height: 1.2;
+  }
+
+  .ms03-portal :is(button, input, select) {
+    font: inherit;
+    color: inherit;
+    margin: 0;
+  }
+
+  .ms03-portal a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .ms03-portal table {
+    border-collapse: collapse;
+  }
+
+  .ms03-portal *:focus-visible {
+    @apply outline-none ring-2 ring-brand-primary ring-offset-2 ring-offset-surface-base;
+  }
+}
+
+@layer components {
+  .ms03-portal .btn {
+    @apply inline-flex cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .ms03-portal .btn-primary {
+    @apply bg-brand-primary text-white hover:bg-brand-hover;
+  }
+
+  .ms03-portal .btn-secondary {
+    @apply border border-line bg-surface-base text-ink-primary hover:bg-surface-secondary;
+  }
+
+  .ms03-portal .btn-ghost {
+    @apply bg-transparent text-ink-secondary hover:bg-surface-secondary;
+  }
+
+  .ms03-portal .btn-danger {
+    @apply border border-red-200 bg-surface-base text-danger hover:bg-red-50;
+  }
+
+  .ms03-portal .input {
+    @apply w-full rounded-lg border border-line bg-surface-base px-3.5 py-2.5 text-sm text-ink-primary transition-colors placeholder:text-ink-secondary/70 focus:border-brand-primary;
+  }
+
+  .ms03-portal .label {
+    @apply mb-1.5 block text-sm font-medium text-ink-primary;
+  }
+
+  .ms03-portal .card {
+    @apply rounded-xl border border-line bg-surface-base shadow-card;
+  }
+
+  .ms03-portal .table {
+    @apply w-full overflow-hidden text-left text-sm;
+  }
+
+  .ms03-portal .table th {
+    @apply border-b border-line bg-surface-secondary px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-secondary;
+  }
+
+  .ms03-portal .table td {
+    @apply border-b border-line px-4 py-3 text-ink-primary;
+  }
+
+  .ms03-portal .table tbody tr:last-child td {
+    @apply border-b-0;
+  }
+
+  .ms03-portal .table tbody tr:hover td {
+    @apply bg-surface-secondary/60;
+  }
+}

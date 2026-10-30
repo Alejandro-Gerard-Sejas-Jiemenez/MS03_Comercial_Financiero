@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Alójate · Comercial</title>
+    <style>
+      body { margin: 0; }
+    </style>
+  </head>
+  <body>
+    <!-- single-spa monta cada microfrontend en su contenedor segun la ruta -->
+    <div id="app-portal"></div>
+    <div id="app-admin"></div>
+    <p id="estado-shell" style="font-family: system-ui; color: #6b7686; padding: 24px">Iniciando sesión…</p>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

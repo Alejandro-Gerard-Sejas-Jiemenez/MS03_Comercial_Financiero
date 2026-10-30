@@ -1,5 +1,0 @@
-{
-  "agregado_tipo": "pago",
-  "consume": "MS-02 (compensacion de la saga o expiracion)",
-  "payload": { "pago_id": "uuid", "reserva_id": "uuid", "motivo": "string" }
-}

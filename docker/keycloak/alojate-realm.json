@@ -1,0 +1,130 @@
+{
+    "realm": "alojate",
+    "enabled": true,
+    "sslRequired": "none",
+    "registrationAllowed": false,
+    "accessTokenLifespan": 900,
+    "roles": {
+        "realm": [
+            {
+                "name": "ADMIN"
+            },
+            {
+                "name": "ANFITRION"
+            },
+            {
+                "name": "CLIENTE"
+            }
+        ]
+    },
+    "clients": [
+        {
+            "clientId": "ms03-comercial-financiero",
+            "name": "MS-03 Comercial y Financiero (portales)",
+            "enabled": true,
+            "publicClient": true,
+            "standardFlowEnabled": true,
+            "directAccessGrantsEnabled": true,
+            "redirectUris": [
+                "http://localhost:5173/*",
+                "http://localhost:4200/*",
+                "http://localhost:9000/*",
+                "http://localhost:3000/*"
+            ],
+            "webOrigins": [
+                "+"
+            ],
+            "attributes": {
+                "pkce.code.challenge.method": "S256",
+                "post.logout.redirect.uris": "+"
+            },
+            "protocolMappers": [
+                {
+                    "name": "audiencia-ms03",
+                    "protocol": "openid-connect",
+                    "protocolMapper": "oidc-audience-mapper",
+                    "config": {
+                        "included.client.audience": "ms03-comercial-financiero",
+                        "access.token.claim": "true",
+                        "id.token.claim": "false"
+                    }
+                }
+            ]
+        }
+    ],
+    "users": [
+        {
+            "username": "admin1",
+            "enabled": true,
+            "email": "admin1@alojate.test",
+            "emailVerified": true,
+            "firstName": "Admin1",
+            "lastName": "Prueba",
+            "credentials": [
+                {
+                    "type": "password",
+                    "value": "clave123",
+                    "temporary": false
+                }
+            ],
+            "realmRoles": [
+                "ADMIN"
+            ]
+        },
+        {
+            "username": "anfi1",
+            "enabled": true,
+            "email": "anfi1@alojate.test",
+            "emailVerified": true,
+            "firstName": "Anfi1",
+            "lastName": "Prueba",
+            "credentials": [
+                {
+                    "type": "password",
+                    "value": "clave123",
+                    "temporary": false
+                }
+            ],
+            "realmRoles": [
+                "ANFITRION"
+            ]
+        },
+        {
+            "username": "cli1",
+            "enabled": true,
+            "email": "cli1@alojate.test",
+            "emailVerified": true,
+            "firstName": "Cli1",
+            "lastName": "Prueba",
+            "credentials": [
+                {
+                    "type": "password",
+                    "value": "clave123",
+                    "temporary": false
+                }
+            ],
+            "realmRoles": [
+                "CLIENTE"
+            ]
+        },
+        {
+            "username": "ambos1",
+            "enabled": true,
+            "email": "ambos1@alojate.test",
+            "emailVerified": true,
+            "firstName": "Ambos1",
+            "lastName": "Prueba",
+            "credentials": [
+                {
+                    "type": "password",
+                    "value": "clave123",
+                    "temporary": false
+                }
+            ],
+            "realmRoles": [
+                "CLIENTE",
+                "ANFITRION"
+            ]
+        }
+    ]
+}

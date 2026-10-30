@@ -1,9 +1,0 @@
-{
-  "agregado_tipo": "promocion",
-  "consume": "MS-04 (F11)",
-  "payload": {
-    "promocion_id": "uuid", "codigo": "string?", "anfitrion_id": "uuid?", "tipo_descuento": "string", "descuento": "decimal",
-    "moneda": "currency", "financiada_por": "string", "usos_actuales": "int", "max_usos": "int?", "reserva_id": "uuid?",
-    "pago_id": "uuid?", "aplicada_en": "datetime"
-  }
-}

@@ -6,7 +6,7 @@ namespace Src\Shared\Application\Port;
 
 /**
  * Broker de mensajeria (RabbitMQ, exchange topic `comercial.events`).
- * Solo lo usa el relay del Outbox (CU-SHA-01).
+ * Solo lo usa el relay del Outbox.
  */
 interface MessageBroker
 {

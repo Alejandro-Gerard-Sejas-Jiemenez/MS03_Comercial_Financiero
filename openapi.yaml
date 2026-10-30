@@ -8,25 +8,23 @@ servers:
     url: /api/v1
 tags:
   -
-    name: Acuerdos
+    name: Comercial
   -
-    name: Liquidaciones
+    name: Financiero
   -
     name: Monetizacion
   -
-    name: Pagos
-  -
-    name: Promociones
+    name: Relaciones
   -
     name: Shared
 paths:
   /acuerdos:
     get:
       tags:
-        - Acuerdos
+        - Relaciones
       operationId: acuerdoControllerListar
       summary: 'Listar — AcuerdoController'
-      description: 'Casos de uso del controlador: CU-ACU-01. Roles permitidos: ANFITRION, ADMIN.'
+      description: 'Roles permitidos: ANFITRION, ADMIN.'
       security:
         -
           bearerAuth: []
@@ -73,10 +71,10 @@ paths:
                 $ref: '#/components/schemas/Error'
     post:
       tags:
-        - Acuerdos
+        - Relaciones
       operationId: acuerdoControllerCrear
       summary: 'Crear — AcuerdoController'
-      description: 'Casos de uso del controlador: CU-ACU-01. Roles permitidos: ADMIN.'
+      description: 'Roles permitidos: ADMIN.'
       security:
         -
           bearerAuth: []
@@ -146,10 +144,10 @@ paths:
   '/acuerdos/{acuerdoId}':
     get:
       tags:
-        - Acuerdos
+        - Relaciones
       operationId: acuerdoControllerMostrar
       summary: 'Mostrar — AcuerdoController'
-      description: 'Casos de uso del controlador: CU-ACU-01. Roles permitidos: ANFITRION, ADMIN.'
+      description: 'Roles permitidos: ANFITRION, ADMIN.'
       security:
         -
           bearerAuth: []
@@ -192,12 +190,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-    patch:
+    put:
       tags:
-        - Acuerdos
+        - Relaciones
       operationId: acuerdoControllerActualizar
       summary: 'Actualizar — AcuerdoController'
-      description: 'Casos de uso del controlador: CU-ACU-01. Roles permitidos: ADMIN.'
+      description: 'Roles permitidos: ADMIN.'
       security:
         -
           bearerAuth: []
@@ -216,6 +214,17 @@ paths:
             schema:
               type: object
               properties:
+                estado:
+                  type: string
+                  nullable: true
+                motivo:
+                  type: string
+                  maxLength: 500
+                  nullable: true
+                saga_id:
+                  type: string
+                  format: uuid
+                  nullable: true
                 dias_liquidacion:
                   type: integer
                   nullable: true
@@ -269,136 +278,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  '/acuerdos/{acuerdoId}/estado':
-    post:
-      tags:
-        - Acuerdos
-      operationId: acuerdoControllerCambiarEstado
-      summary: 'Cambiar estado — AcuerdoController'
-      description: 'Casos de uso del controlador: CU-ACU-01. Roles permitidos: ADMIN.'
-      security:
-        -
-          bearerAuth: []
-      parameters:
-        -
-          name: acuerdoId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - estado
-              properties:
-                estado:
-                  type: string
-                motivo:
-                  type: string
-                  maxLength: 500
-                  nullable: true
-                saga_id:
-                  type: string
-                  format: uuid
-                  nullable: true
-      responses:
-        200:
-          description: Correcto
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Respuesta'
-        401:
-          description: 'Falta el token o es invalido'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        403:
-          description: 'El rol no puede hacer esto o el recurso no es suyo'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        404:
-          description: 'El recurso no existe'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        409:
-          description: 'Choca con el estado actual del recurso'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        422:
-          description: 'Datos invalidos o regla de negocio violada'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-  '/anfitriones/{anfitrionId}/acuerdos':
-    get:
-      tags:
-        - Acuerdos
-      operationId: acuerdoControllerHistorial
-      summary: 'Historial — AcuerdoController'
-      description: 'Casos de uso del controlador: CU-ACU-01. Roles permitidos: ANFITRION, ADMIN.'
-      security:
-        -
-          bearerAuth: []
-      parameters:
-        -
-          name: anfitrionId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        200:
-          description: Correcto
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Respuesta'
-        401:
-          description: 'Falta el token o es invalido'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        403:
-          description: 'El rol no puede hacer esto o el recurso no es suyo'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        404:
-          description: 'El recurso no existe'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        422:
-          description: 'Datos invalidos o regla de negocio violada'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
   '/anfitriones/{anfitrionId}/comisiones-por-liquidar':
     get:
       tags:
-        - Liquidaciones
+        - Financiero
       operationId: liquidacionControllerPorLiquidar
       summary: 'Por liquidar — LiquidacionController'
-      description: 'Casos de uso del controlador: CU-LIQ-05, 06, 07. Roles permitidos: ANFITRION, ADMIN.'
+      description: 'Roles permitidos: ANFITRION, ADMIN.'
       security:
         -
           bearerAuth: []
@@ -452,10 +338,10 @@ paths:
   '/anfitriones/{anfitrionId}/liquidaciones':
     get:
       tags:
-        - Liquidaciones
+        - Financiero
       operationId: liquidacionControllerHistorial
       summary: 'Historial — LiquidacionController'
-      description: 'Casos de uso del controlador: CU-LIQ-05, 06, 07. Roles permitidos: ANFITRION, ADMIN.'
+      description: 'Roles permitidos: ANFITRION, ADMIN.'
       security:
         -
           bearerAuth: []
@@ -517,10 +403,10 @@ paths:
   '/anfitriones/{anfitrionId}/metodos-cobro':
     get:
       tags:
-        - Acuerdos
+        - Relaciones
       operationId: metodoCobroControllerListar
       summary: 'Listar — MetodoCobroController'
-      description: 'Casos de uso del controlador: CU-ACU-03. Roles permitidos: ANFITRION, ADMIN.'
+      description: 'Roles permitidos: ANFITRION, ADMIN.'
       security:
         -
           bearerAuth: []
@@ -565,10 +451,10 @@ paths:
                 $ref: '#/components/schemas/Error'
     post:
       tags:
-        - Acuerdos
+        - Relaciones
       operationId: metodoCobroControllerRegistrar
       summary: 'Registrar — MetodoCobroController'
-      description: 'Casos de uso del controlador: CU-ACU-03. Roles permitidos: ANFITRION, ADMIN.'
+      description: 'Roles permitidos: ANFITRION, ADMIN.'
       security:
         -
           bearerAuth: []
@@ -646,10 +532,10 @@ paths:
   '/anfitriones/{anfitrionId}/saldo':
     get:
       tags:
-        - Liquidaciones
+        - Financiero
       operationId: liquidacionControllerSaldo
       summary: 'Saldo — LiquidacionController'
-      description: 'Casos de uso del controlador: CU-LIQ-05, 06, 07. Roles permitidos: ANFITRION, ADMIN.'
+      description: 'Roles permitidos: ANFITRION, ADMIN.'
       security:
         -
           bearerAuth: []
@@ -704,10 +590,10 @@ paths:
   /conciliaciones:
     post:
       tags:
-        - Pagos
+        - Financiero
       operationId: conciliacionControllerEjecutar
       summary: 'Ejecutar — ConciliacionController'
-      description: 'Casos de uso del controlador: CU-PAG-11 y 12. Roles permitidos: ADMIN.'
+      description: 'Roles permitidos: ADMIN.'
       security:
         -
           bearerAuth: []
@@ -761,10 +647,10 @@ paths:
   '/conciliaciones/{conciliacionId}/revisiones':
     post:
       tags:
-        - Pagos
+        - Financiero
       operationId: conciliacionControllerRevisar
       summary: 'Revisar — ConciliacionController'
-      description: 'Casos de uso del controlador: CU-PAG-11 y 12. Roles permitidos: ADMIN.'
+      description: 'Roles permitidos: ADMIN.'
       security:
         -
           bearerAuth: []
@@ -840,7 +726,7 @@ paths:
         - Monetizacion
       operationId: monetizacionControllerCalcularDesglose
       summary: 'Calcular desglose — MonetizacionController'
-      description: 'Casos de uso del controlador: CU-MON-01. Roles permitidos: CLIENTE, ANFITRION, ADMIN.'
+      description: 'Roles permitidos: CLIENTE, ANFITRION, ADMIN.'
       security:
         -
           bearerAuth: []
@@ -913,13 +799,73 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /liquidaciones:
+    get:
+      tags:
+        - Financiero
+      operationId: liquidacionControllerListar
+      summary: 'Listar — LiquidacionController'
+      description: 'Roles permitidos: ADMIN.'
+      security:
+        -
+          bearerAuth: []
+      parameters:
+        -
+          name: estado
+          in: query
+          required: false
+          schema:
+            type: string
+            nullable: true
+        -
+          name: anfitrion_id
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+            nullable: true
+        -
+          name: limite
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            nullable: true
+      responses:
+        200:
+          description: Correcto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Respuesta'
+        401:
+          description: 'Falta el token o es invalido'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        403:
+          description: 'El rol no puede hacer esto o el recurso no es suyo'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        422:
+          description: 'Datos invalidos o regla de negocio violada'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   '/liquidaciones/{liquidacionId}':
     get:
       tags:
-        - Liquidaciones
+        - Financiero
       operationId: liquidacionControllerDetalle
       summary: 'Detalle — LiquidacionController'
-      description: 'Casos de uso del controlador: CU-LIQ-05, 06, 07. Roles permitidos: ANFITRION, ADMIN.'
+      description: 'Roles permitidos: ANFITRION, ADMIN.'
       security:
         -
           bearerAuth: []
@@ -965,10 +911,10 @@ paths:
   '/liquidaciones/{liquidacionId}/aprobacion':
     post:
       tags:
-        - Liquidaciones
+        - Financiero
       operationId: liquidacionControllerAprobar
       summary: 'Aprobar — LiquidacionController'
-      description: 'Casos de uso del controlador: CU-LIQ-05, 06, 07. Roles permitidos: ADMIN.'
+      description: 'Roles permitidos: ADMIN.'
       security:
         -
           bearerAuth: []
@@ -1020,10 +966,10 @@ paths:
   '/liquidaciones/{liquidacionId}/pago':
     post:
       tags:
-        - Liquidaciones
+        - Financiero
       operationId: liquidacionControllerPagar
       summary: 'Pagar — LiquidacionController'
-      description: 'Casos de uso del controlador: CU-LIQ-05, 06, 07. Roles permitidos: ADMIN.'
+      description: 'Roles permitidos: ADMIN.'
       security:
         -
           bearerAuth: []
@@ -1087,10 +1033,10 @@ paths:
   '/liquidaciones/{liquidacionId}/rechazo':
     post:
       tags:
-        - Liquidaciones
+        - Financiero
       operationId: liquidacionControllerRechazar
       summary: 'Rechazar — LiquidacionController'
-      description: 'Casos de uso del controlador: CU-LIQ-05, 06, 07. Roles permitidos: ADMIN.'
+      description: 'Roles permitidos: ADMIN.'
       security:
         -
           bearerAuth: []
@@ -1157,10 +1103,10 @@ paths:
   '/metodos-cobro/{metodoId}':
     get:
       tags:
-        - Acuerdos
+        - Relaciones
       operationId: metodoCobroControllerMostrar
       summary: 'Mostrar — MetodoCobroController'
-      description: 'Casos de uso del controlador: CU-ACU-03. Roles permitidos: ANFITRION, ADMIN.'
+      description: 'Roles permitidos: ANFITRION, ADMIN.'
       security:
         -
           bearerAuth: []
@@ -1203,12 +1149,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-    patch:
+    put:
       tags:
-        - Acuerdos
+        - Relaciones
       operationId: metodoCobroControllerActualizar
       summary: 'Actualizar — MetodoCobroController'
-      description: 'Casos de uso del controlador: CU-ACU-03. Roles permitidos: ANFITRION, ADMIN.'
+      description: 'Roles permitidos: ANFITRION, ADMIN.'
       security:
         -
           bearerAuth: []
@@ -1239,61 +1185,12 @@ paths:
                   type: string
                   maxLength: 50
                   nullable: true
-      responses:
-        200:
-          description: Correcto
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Respuesta'
-        401:
-          description: 'Falta el token o es invalido'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        403:
-          description: 'El rol no puede hacer esto o el recurso no es suyo'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        404:
-          description: 'El recurso no existe'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        409:
-          description: 'Choca con el estado actual del recurso'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        422:
-          description: 'Datos invalidos o regla de negocio violada'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-  '/metodos-cobro/{metodoId}/principal':
-    post:
-      tags:
-        - Acuerdos
-      operationId: metodoCobroControllerDefinirPrincipal
-      summary: 'Definir principal — MetodoCobroController'
-      description: 'Casos de uso del controlador: CU-ACU-03. Roles permitidos: ANFITRION, ADMIN.'
-      security:
-        -
-          bearerAuth: []
-      parameters:
-        -
-          name: metodoId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+                es_principal:
+                  type: boolean
+                  nullable: true
+                activo:
+                  type: boolean
+                  nullable: true
       responses:
         200:
           description: Correcto
@@ -1334,10 +1231,10 @@ paths:
   '/metodos-cobro/{metodoId}/verificacion':
     post:
       tags:
-        - Acuerdos
+        - Relaciones
       operationId: metodoCobroControllerVerificar
       summary: 'Verificar — MetodoCobroController'
-      description: 'Casos de uso del controlador: CU-ACU-03. Roles permitidos: ADMIN.'
+      description: 'Roles permitidos: ADMIN.'
       security:
         -
           bearerAuth: []
@@ -1389,10 +1286,10 @@ paths:
   /pagos:
     get:
       tags:
-        - Pagos
+        - Financiero
       operationId: pagoControllerListar
       summary: 'Listar — PagoController'
-      description: 'Casos de uso del controlador: CU-PAG-01, 02, 03, 04, 06 y 10. Roles permitidos: CLIENTE, ANFITRION, ADMIN.'
+      description: 'Roles permitidos: CLIENTE, ANFITRION, ADMIN.'
       security:
         -
           bearerAuth: []
@@ -1490,10 +1387,10 @@ paths:
                 $ref: '#/components/schemas/Error'
     post:
       tags:
-        - Pagos
+        - Financiero
       operationId: pagoControllerCrear
       summary: 'Crear — PagoController'
-      description: 'Casos de uso del controlador: CU-PAG-01, 02, 03, 04, 06 y 10. Roles permitidos: CLIENTE, ADMIN.'
+      description: 'Roles permitidos: CLIENTE, ADMIN.'
       security:
         -
           bearerAuth: []
@@ -1591,10 +1488,10 @@ paths:
   /pagos/cotizaciones:
     post:
       tags:
-        - Pagos
+        - Financiero
       operationId: pagoControllerCotizar
       summary: 'Cotizar — PagoController'
-      description: 'Casos de uso del controlador: CU-PAG-01, 02, 03, 04, 06 y 10. Roles permitidos: CLIENTE, ADMIN.'
+      description: 'Roles permitidos: CLIENTE, ADMIN.'
       security:
         -
           bearerAuth: []
@@ -1677,10 +1574,9 @@ paths:
   /pagos/notificaciones-pasarela:
     post:
       tags:
-        - Pagos
+        - Financiero
       operationId: notificacionPasarelaController__invoke
       summary: '__invoke — NotificacionPasarelaController'
-      description: 'Casos de uso del controlador: CU-PAG-05.'
       security:
         -
           webhookSecret: []
@@ -1754,10 +1650,10 @@ paths:
   '/pagos/{pagoId}':
     get:
       tags:
-        - Pagos
+        - Financiero
       operationId: pagoControllerMostrar
       summary: 'Mostrar — PagoController'
-      description: 'Casos de uso del controlador: CU-PAG-01, 02, 03, 04, 06 y 10. Roles permitidos: CLIENTE, ANFITRION, ADMIN.'
+      description: 'Roles permitidos: CLIENTE, ANFITRION, ADMIN.'
       security:
         -
           bearerAuth: []
@@ -1803,10 +1699,10 @@ paths:
   '/pagos/{pagoId}/cancelacion':
     post:
       tags:
-        - Pagos
+        - Financiero
       operationId: pagoControllerCancelar
       summary: 'Cancelar — PagoController'
-      description: 'Casos de uso del controlador: CU-PAG-01, 02, 03, 04, 06 y 10. Roles permitidos: CLIENTE, ADMIN.'
+      description: 'Roles permitidos: CLIENTE, ADMIN.'
       security:
         -
           bearerAuth: []
@@ -1870,10 +1766,10 @@ paths:
   '/pagos/{pagoId}/cobro':
     post:
       tags:
-        - Pagos
+        - Financiero
       operationId: pagoControllerCobrar
       summary: 'Cobrar — PagoController'
-      description: 'Casos de uso del controlador: CU-PAG-01, 02, 03, 04, 06 y 10. Roles permitidos: CLIENTE, ADMIN.'
+      description: 'Roles permitidos: CLIENTE, ADMIN.'
       security:
         -
           bearerAuth: []
@@ -1931,60 +1827,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
   '/pagos/{pagoId}/comprobante':
-    get:
-      tags:
-        - Pagos
-      operationId: pagoControllerComprobante
-      summary: 'Comprobante — PagoController'
-      description: 'Casos de uso del controlador: CU-PAG-01, 02, 03, 04, 06 y 10. Roles permitidos: CLIENTE, ANFITRION, ADMIN.'
-      security:
-        -
-          bearerAuth: []
-      parameters:
-        -
-          name: pagoId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        200:
-          description: Correcto
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Respuesta'
-        401:
-          description: 'Falta el token o es invalido'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        403:
-          description: 'El rol no puede hacer esto o el recurso no es suyo'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        404:
-          description: 'El recurso no existe'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        422:
-          description: 'Datos invalidos o regla de negocio violada'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
     post:
       tags:
-        - Pagos
+        - Financiero
       operationId: pagoControllerEmitirComprobante
       summary: 'Emitir comprobante — PagoController'
-      description: 'Casos de uso del controlador: CU-PAG-01, 02, 03, 04, 06 y 10. Roles permitidos: CLIENTE, ADMIN.'
+      description: 'Roles permitidos: CLIENTE, ADMIN.'
       security:
         -
           bearerAuth: []
@@ -2051,111 +1899,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  '/pagos/{pagoId}/reembolsos':
-    get:
-      tags:
-        - Pagos
-      operationId: pagoControllerReembolsos
-      summary: 'Reembolsos — PagoController'
-      description: 'Casos de uso del controlador: CU-PAG-01, 02, 03, 04, 06 y 10. Roles permitidos: CLIENTE, ANFITRION, ADMIN.'
-      security:
-        -
-          bearerAuth: []
-      parameters:
-        -
-          name: pagoId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        200:
-          description: Correcto
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Respuesta'
-        401:
-          description: 'Falta el token o es invalido'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        403:
-          description: 'El rol no puede hacer esto o el recurso no es suyo'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        404:
-          description: 'El recurso no existe'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        422:
-          description: 'Datos invalidos o regla de negocio violada'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-  '/pagos/{pagoId}/transacciones':
-    get:
-      tags:
-        - Pagos
-      operationId: pagoControllerTransacciones
-      summary: 'Transacciones — PagoController'
-      description: 'Casos de uso del controlador: CU-PAG-01, 02, 03, 04, 06 y 10. Roles permitidos: CLIENTE, ANFITRION, ADMIN.'
-      security:
-        -
-          bearerAuth: []
-      parameters:
-        -
-          name: pagoId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        200:
-          description: Correcto
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Respuesta'
-        401:
-          description: 'Falta el token o es invalido'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        403:
-          description: 'El rol no puede hacer esto o el recurso no es suyo'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        404:
-          description: 'El recurso no existe'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        422:
-          description: 'Datos invalidos o regla de negocio violada'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
   /promociones:
     get:
       tags:
-        - Promociones
+        - Comercial
       operationId: promocionControllerListar
       summary: 'Listar — PromocionController'
-      description: 'Casos de uso del controlador: CU-PRO-01. Roles permitidos: ANFITRION, ADMIN.'
+      description: 'Roles permitidos: ANFITRION, ADMIN.'
       security:
         -
           bearerAuth: []
@@ -2209,10 +1959,10 @@ paths:
                 $ref: '#/components/schemas/Error'
     post:
       tags:
-        - Promociones
+        - Comercial
       operationId: promocionControllerCrear
       summary: 'Crear — PromocionController'
-      description: 'Casos de uso del controlador: CU-PRO-01. Roles permitidos: ANFITRION, ADMIN.'
+      description: 'Roles permitidos: ANFITRION, ADMIN.'
       security:
         -
           bearerAuth: []
@@ -2308,10 +2058,10 @@ paths:
   /promociones/descuento:
     post:
       tags:
-        - Promociones
+        - Comercial
       operationId: promocionControllerDescuento
       summary: 'Descuento — PromocionController'
-      description: 'Casos de uso del controlador: CU-PRO-01. Roles permitidos: CLIENTE, ANFITRION, ADMIN.'
+      description: 'Roles permitidos: CLIENTE, ANFITRION, ADMIN.'
       security:
         -
           bearerAuth: []
@@ -2388,10 +2138,10 @@ paths:
   '/promociones/{promocionId}':
     get:
       tags:
-        - Promociones
+        - Comercial
       operationId: promocionControllerMostrar
       summary: 'Mostrar — PromocionController'
-      description: 'Casos de uso del controlador: CU-PRO-01. Roles permitidos: ANFITRION, ADMIN.'
+      description: 'Roles permitidos: ANFITRION, ADMIN.'
       security:
         -
           bearerAuth: []
@@ -2434,12 +2184,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-    patch:
+    put:
       tags:
-        - Promociones
+        - Comercial
       operationId: promocionControllerActualizar
       summary: 'Actualizar — PromocionController'
-      description: 'Casos de uso del controlador: CU-PRO-01. Roles permitidos: ANFITRION, ADMIN.'
+      description: 'Roles permitidos: ANFITRION, ADMIN.'
       security:
         -
           bearerAuth: []
@@ -2484,239 +2234,14 @@ paths:
                 financiada_por:
                   type: string
                   nullable: true
-      responses:
-        200:
-          description: Correcto
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Respuesta'
-        401:
-          description: 'Falta el token o es invalido'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        403:
-          description: 'El rol no puede hacer esto o el recurso no es suyo'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        404:
-          description: 'El recurso no existe'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        409:
-          description: 'Choca con el estado actual del recurso'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        422:
-          description: 'Datos invalidos o regla de negocio violada'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-  '/promociones/{promocionId}/activacion':
-    post:
-      tags:
-        - Promociones
-      operationId: promocionControllerActivar
-      summary: 'Activar — PromocionController'
-      description: 'Casos de uso del controlador: CU-PRO-01. Roles permitidos: ANFITRION, ADMIN.'
-      security:
-        -
-          bearerAuth: []
-      parameters:
-        -
-          name: promocionId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        200:
-          description: Correcto
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Respuesta'
-        401:
-          description: 'Falta el token o es invalido'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        403:
-          description: 'El rol no puede hacer esto o el recurso no es suyo'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        404:
-          description: 'El recurso no existe'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        409:
-          description: 'Choca con el estado actual del recurso'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        422:
-          description: 'Datos invalidos o regla de negocio violada'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-  '/promociones/{promocionId}/alojamientos':
-    put:
-      tags:
-        - Promociones
-      operationId: promocionControllerAsignarAlojamientos
-      summary: 'Asignar alojamientos — PromocionController'
-      description: 'Casos de uso del controlador: CU-PRO-01. Roles permitidos: ANFITRION, ADMIN.'
-      security:
-        -
-          bearerAuth: []
-      parameters:
-        -
-          name: promocionId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - alojamientos
-              properties:
                 alojamientos:
                   type: array
                   items:
                     type: string
-      responses:
-        200:
-          description: Correcto
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Respuesta'
-        401:
-          description: 'Falta el token o es invalido'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        403:
-          description: 'El rol no puede hacer esto o el recurso no es suyo'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        404:
-          description: 'El recurso no existe'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        409:
-          description: 'Choca con el estado actual del recurso'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        422:
-          description: 'Datos invalidos o regla de negocio violada'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-  '/promociones/{promocionId}/cancelacion':
-    post:
-      tags:
-        - Promociones
-      operationId: promocionControllerCancelar
-      summary: 'Cancelar — PromocionController'
-      description: 'Casos de uso del controlador: CU-PRO-01. Roles permitidos: ANFITRION, ADMIN.'
-      security:
-        -
-          bearerAuth: []
-      parameters:
-        -
-          name: promocionId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        200:
-          description: Correcto
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Respuesta'
-        401:
-          description: 'Falta el token o es invalido'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        403:
-          description: 'El rol no puede hacer esto o el recurso no es suyo'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        404:
-          description: 'El recurso no existe'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        409:
-          description: 'Choca con el estado actual del recurso'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        422:
-          description: 'Datos invalidos o regla de negocio violada'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-  '/promociones/{promocionId}/pausa':
-    post:
-      tags:
-        - Promociones
-      operationId: promocionControllerPausar
-      summary: 'Pausar — PromocionController'
-      description: 'Casos de uso del controlador: CU-PRO-01. Roles permitidos: ANFITRION, ADMIN.'
-      security:
-        -
-          bearerAuth: []
-      parameters:
-        -
-          name: promocionId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+                  nullable: true
+                estado:
+                  type: string
+                  nullable: true
       responses:
         200:
           description: Correcto
@@ -2757,10 +2282,10 @@ paths:
   /reembolsos:
     post:
       tags:
-        - Pagos
+        - Financiero
       operationId: reembolsoControllerSolicitar
       summary: 'Solicitar — ReembolsoController'
-      description: 'Casos de uso del controlador: CU-PAG-07, 08 y 09. Roles permitidos: CLIENTE, ADMIN.'
+      description: 'Roles permitidos: CLIENTE, ADMIN.'
       security:
         -
           bearerAuth: []
@@ -2830,10 +2355,10 @@ paths:
   '/reembolsos/{reembolsoId}/procesamiento':
     post:
       tags:
-        - Pagos
+        - Financiero
       operationId: reembolsoControllerProcesar
       summary: 'Procesar — ReembolsoController'
-      description: 'Casos de uso del controlador: CU-PAG-07, 08 y 09. Roles permitidos: ADMIN.'
+      description: 'Roles permitidos: ADMIN.'
       security:
         -
           bearerAuth: []
@@ -2893,10 +2418,10 @@ paths:
   '/reembolsos/{reembolsoId}/revision':
     post:
       tags:
-        - Pagos
+        - Financiero
       operationId: reembolsoControllerRevisar
       summary: 'Revisar — ReembolsoController'
-      description: 'Casos de uso del controlador: CU-PAG-07, 08 y 09. Roles permitidos: ADMIN.'
+      description: 'Roles permitidos: ADMIN.'
       security:
         -
           bearerAuth: []
@@ -2966,7 +2491,7 @@ paths:
         - Monetizacion
       operationId: monetizacionControllerListar
       summary: 'Listar — MonetizacionController'
-      description: 'Casos de uso del controlador: CU-MON-01. Roles permitidos: ADMIN.'
+      description: 'Roles permitidos: ADMIN.'
       security:
         -
           bearerAuth: []
@@ -3015,7 +2540,7 @@ paths:
         - Monetizacion
       operationId: monetizacionControllerCrear
       summary: 'Crear — MonetizacionController'
-      description: 'Casos de uso del controlador: CU-MON-01. Roles permitidos: ADMIN.'
+      description: 'Roles permitidos: ADMIN.'
       security:
         -
           bearerAuth: []
@@ -3100,7 +2625,7 @@ paths:
         - Monetizacion
       operationId: monetizacionControllerVigentes
       summary: 'Vigentes — MonetizacionController'
-      description: 'Casos de uso del controlador: CU-MON-01. Roles permitidos: ADMIN.'
+      description: 'Roles permitidos: ADMIN.'
       security:
         -
           bearerAuth: []
@@ -3164,7 +2689,7 @@ paths:
         - Monetizacion
       operationId: monetizacionControllerMostrar
       summary: 'Mostrar — MonetizacionController'
-      description: 'Casos de uso del controlador: CU-MON-01. Roles permitidos: ADMIN.'
+      description: 'Roles permitidos: ADMIN.'
       security:
         -
           bearerAuth: []
@@ -3207,12 +2732,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-    patch:
+    put:
       tags:
         - Monetizacion
       operationId: monetizacionControllerActualizar
       summary: 'Actualizar — MonetizacionController'
-      description: 'Casos de uso del controlador: CU-MON-01. Roles permitidos: ADMIN.'
+      description: 'Roles permitidos: ADMIN.'
       security:
         -
           bearerAuth: []
@@ -3246,61 +2771,9 @@ paths:
                   type: string
                   format: date-time
                   nullable: true
-      responses:
-        200:
-          description: Correcto
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Respuesta'
-        401:
-          description: 'Falta el token o es invalido'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        403:
-          description: 'El rol no puede hacer esto o el recurso no es suyo'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        404:
-          description: 'El recurso no existe'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        409:
-          description: 'Choca con el estado actual del recurso'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        422:
-          description: 'Datos invalidos o regla de negocio violada'
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-  '/reglas-monetizacion/{reglaId}/desactivacion':
-    post:
-      tags:
-        - Monetizacion
-      operationId: monetizacionControllerDesactivar
-      summary: 'Desactivar — MonetizacionController'
-      description: 'Casos de uso del controlador: CU-MON-01. Roles permitidos: ADMIN.'
-      security:
-        -
-          bearerAuth: []
-      parameters:
-        -
-          name: reglaId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+                estado:
+                  type: string
+                  nullable: true
       responses:
         200:
           description: Correcto
@@ -3341,10 +2814,10 @@ paths:
   /reportes/ingresos:
     get:
       tags:
-        - Liquidaciones
+        - Financiero
       operationId: liquidacionControllerReporteIngresos
       summary: 'Reporte ingresos — LiquidacionController'
-      description: 'Casos de uso del controlador: CU-LIQ-05, 06, 07. Roles permitidos: ADMIN.'
+      description: 'Roles permitidos: ADMIN.'
       security:
         -
           bearerAuth: []
@@ -3376,10 +2849,10 @@ paths:
   /reportes/ingresos-por-categoria:
     get:
       tags:
-        - Liquidaciones
+        - Financiero
       operationId: liquidacionControllerReportePorCategoria
       summary: 'Reporte por categoria — LiquidacionController'
-      description: 'Casos de uso del controlador: CU-LIQ-05, 06, 07. Roles permitidos: ADMIN.'
+      description: 'Roles permitidos: ADMIN.'
       security:
         -
           bearerAuth: []

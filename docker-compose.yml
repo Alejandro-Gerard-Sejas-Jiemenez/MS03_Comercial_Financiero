@@ -28,12 +28,15 @@ services:
       - "15672:15672"
 
   # Solo para desarrollo: emite los JWT que MS-03 valida (KEYCLOAK_* en .env).
-  # Crear el realm `alojate`, el cliente `ms03-comercial-financiero` y los
-  # roles ADMIN, ANFITRION y CLIENTE desde http://localhost:8080 (admin/admin).
+  # El realm `alojate` (cliente, roles y usuarios de prueba admin1/anfi1/cli1/ambos1,
+  # clave `clave123`) se importa solo desde docker/keycloak/alojate-realm.json.
+  # Consola: http://localhost:8080 (admin/admin).
   keycloak:
     image: quay.io/keycloak/keycloak:26.0
     container_name: ms03-keycloak
-    command: start-dev
+    command: start-dev --import-realm
+    volumes:
+      - ./docker/keycloak:/opt/keycloak/data/import:ro
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
       KC_BOOTSTRAP_ADMIN_PASSWORD: admin
@@ -54,6 +57,10 @@ services:
       APP_KEY: ${APP_KEY:-}
       APP_ENV: production
       APP_DEBUG: "false"
+      # Sin config/cache.php, session.php ni queue.php el framework usaria `database` (tablas que no existen).
+      CACHE_STORE: file
+      SESSION_DRIVER: array
+      QUEUE_CONNECTION: sync
       DB_CONNECTION: pgsql
       DB_HOST: postgres
       DB_PORT: 5432
