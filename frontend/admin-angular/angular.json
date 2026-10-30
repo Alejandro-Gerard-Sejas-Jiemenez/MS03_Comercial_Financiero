@@ -79,6 +79,16 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "spa": {
+              "browser": "src/spa.ts",
+              "polyfills": [],
+              "index": false,
+              "outputHashing": "none",
+              "outputPath": "dist/spa",
+              "optimization": true,
+              "extractLicenses": false,
+              "sourceMap": false
             }
           },
           "defaultConfiguration": "production"

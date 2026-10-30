@@ -8,7 +8,9 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "build:spa": "tsc -b && vite build -c vite.spa.config.ts",
+    "serve:spa": "vite preview -c vite.spa.config.ts"
   },
   "dependencies": {
     "keycloak-js": "^26.2.5",

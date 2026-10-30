@@ -6,7 +6,9 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "build:spa": "ng build --configuration spa",
+    "serve:spa": "npx --yes http-server dist/spa/browser -p 4201 --cors -c-1"
   },
   "private": true,
   "dependencies": {

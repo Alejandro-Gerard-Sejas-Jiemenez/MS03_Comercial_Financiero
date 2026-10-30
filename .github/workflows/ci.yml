@@ -81,3 +81,29 @@ jobs:
       - uses: actions/checkout@v4
       - name: Construye la imagen
         run: docker build -t ms03:ci .
+
+  frontend:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        proyecto: [portal-react, admin-angular, shell]
+    defaults:
+      run:
+        working-directory: frontend/${{ matrix.proyecto }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/${{ matrix.proyecto }}/package-lock.json
+      - run: npm ci
+      - name: Pruebas (solo el portal React las tiene)
+        if: matrix.proyecto == 'portal-react'
+        run: npm test
+      - name: Compilar
+        run: npm run build
+      - name: Compilar para el shell (modulo single-spa)
+        if: matrix.proyecto != 'shell'
+        run: npm run build:spa

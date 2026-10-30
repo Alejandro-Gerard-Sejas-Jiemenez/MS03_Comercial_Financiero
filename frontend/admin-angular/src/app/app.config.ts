@@ -1,14 +1,9 @@
-import { ApplicationConfig, provideAppInitializer, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
-import { iniciarSesion } from './nucleo';
 
+/** Lo comun a los dos modos (independiente y dentro del shell single-spa). */
 export const appConfig: ApplicationConfig = {
-  providers: [
-    provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(routes),
-    // La app no arranca hasta que Keycloak confirma la sesion.
-    provideAppInitializer(() => iniciarSesion()),
-  ],
+  providers: [provideZoneChangeDetection({ eventCoalescing: true }), provideRouter(routes)],
 };
