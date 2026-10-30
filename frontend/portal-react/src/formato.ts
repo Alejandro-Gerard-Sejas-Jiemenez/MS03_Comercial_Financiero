@@ -18,10 +18,14 @@ export function aCentavos(texto: string): number {
   return Number(enteros) * 100 + Number(decimales.padEnd(2, '0'))
 }
 
+/**
+ * La API manda fechas como `2026-01-01T00:00:00+00:00`. Se lee el dia del propio texto: pasarlo por `Date`
+ * lo corre un dia hacia atras en zonas al oeste de UTC (Bolivia es UTC-4).
+ */
 export function fecha(iso?: string | null): string {
   if (!iso) return '—'
-  const d = new Date(iso)
-  return Number.isNaN(d.getTime()) ? iso : d.toLocaleDateString('es-BO')
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso)
+  return m ? `${m[3]}/${m[2]}/${m[1]}` : iso
 }
 
 /** El total no viene en los listados: se arma con subtotal - descuento + cargo de servicio. */

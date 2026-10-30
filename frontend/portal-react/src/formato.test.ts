@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { aCentavos, dinero, totalDe } from './formato'
+import { aCentavos, dinero, fecha, totalDe } from './formato'
 
 describe('dinero', () => {
   it('convierte Bs a centavos enteros sin errores de coma flotante', () => {
@@ -19,5 +19,11 @@ describe('dinero', () => {
     const m = (centavos: number) => ({ centavos, moneda: 'BOB', monto: (centavos / 100).toFixed(2) })
     expect(totalDe({ subtotal: m(100000), descuento: m(10000), cargo_servicio: m(5000) })?.centavos).toBe(95000)
     expect(dinero(undefined)).toBe('—')
+  })
+
+  it('muestra el dia que manda la API sin correrlo por la zona horaria', () => {
+    expect(fecha('2026-01-01T00:00:00+00:00')).toBe('01/01/2026')
+    expect(fecha('2026-12-31')).toBe('31/12/2026')
+    expect(fecha(null)).toBe('—')
   })
 })
