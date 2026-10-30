@@ -2,8 +2,6 @@
 .github
 .atl
 .env
-.phpunit.result.cache
-.phpunit.cache
 context
 context.zip
 node_modules
@@ -12,7 +10,6 @@ storage/logs/*
 storage/framework/cache/data/*
 storage/framework/sessions/*
 storage/framework/views/*
-tests
 odd
 bootstrap/cache/*.php
 frontend

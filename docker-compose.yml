@@ -57,6 +57,10 @@ services:
       APP_KEY: ${APP_KEY:-}
       APP_ENV: production
       APP_DEBUG: "false"
+      # Sin config/cache.php, session.php ni queue.php el framework usaria `database` (tablas que no existen).
+      CACHE_STORE: file
+      SESSION_DRIVER: array
+      QUEUE_CONNECTION: sync
       DB_CONNECTION: pgsql
       DB_HOST: postgres
       DB_PORT: 5432

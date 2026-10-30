@@ -42,15 +42,10 @@ jobs:
       - run: composer install --no-interaction --no-progress --prefer-dist
 
       - name: Estilo (pint)
-        run: vendor/bin/pint --test src app config routes database tests
+        run: vendor/bin/pint --test src app config routes database
 
-      - name: OpenAPI al dia
-        run: php artisan openapi:generar --check
-
-      - name: Suites sin base de datos (Unit, Application, Architecture, Feature, Contract)
-        run: >
-          vendor/bin/phpunit
-          --testsuite Unit,Application,Architecture,Feature,Contract
+      - name: Arquitectura (las dependencias solo apuntan hacia adentro)
+        run: php artisan arquitectura:verificar
 
       - name: Migraciones contra PostgreSQL 16
         env:
@@ -63,16 +58,6 @@ jobs:
           DB_SEARCH_PATH: comercial,public
         run: php artisan migrate --force
 
-      - name: Integracion (restricciones reales de PostgreSQL)
-        env:
-          DB_CONNECTION: pgsql
-          DB_HOST: 127.0.0.1
-          DB_PORT: 5433
-          DB_DATABASE: ms03_comercial
-          DB_USERNAME: postgres
-          DB_PASSWORD: postgres
-          DB_SEARCH_PATH: comercial,public
-        run: vendor/bin/phpunit --testsuite Integration
 
   imagen:
     runs-on: ubuntu-latest

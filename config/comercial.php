@@ -19,12 +19,12 @@ return [
         'url' => env('COMERCIAL_PASARELA_URL'),
         'llave' => env('COMERCIAL_PASARELA_LLAVE'),
         'timeout' => (int) env('COMERCIAL_PASARELA_TIMEOUT', 15),
-        // Secreto compartido del webhook (CU-PAG-05). Vacio = se rechaza todo.
+        // Secreto compartido del webhook. Vacio = se rechaza todo.
         'webhook_secreto' => env('COMERCIAL_WEBHOOK_SECRETO', ''),
     ],
 
     'outbox' => [
-        // Cuantos eventos publica cada corrida de CU-SHA-01.
+        // Cuantos eventos publica cada corrida de .
         'lote' => (int) env('COMERCIAL_OUTBOX_LOTE', 100),
         'canal_log' => env('COMERCIAL_OUTBOX_CANAL_LOG', 'stack'),
     ],
@@ -61,7 +61,7 @@ return [
 
     'pagos' => [
         // Horas que un pago puede quedarse PENDIENTE antes de que el JOB de
-        // CU-PAG-04 lo cancele y libere la reserva.
+        // lo cancele y libere la reserva.
         'horas_para_expirar_pendiente' => (int) env('COMERCIAL_HORAS_EXPIRA_PAGO', 24),
     ],
 

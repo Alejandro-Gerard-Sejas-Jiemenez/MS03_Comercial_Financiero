@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Src\Shared\Infrastructure\Messaging;
 
 use Src\Shared\Application\Port\EventPublisher;
-use Src\Shared\Domain\OutboxRepository;
+use Src\Shared\Application\Port\OutboxRepository;
 
 /**
  * Implementacion del puerto de salida de eventos con el patron Outbox: no habla

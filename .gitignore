@@ -28,3 +28,6 @@ Thumbs.db
 /frontend/*/node_modules
 /frontend/*/dist
 /frontend/*/.angular
+
+# Herramientas del agente (no son del proyecto)
+/.atl

@@ -6,7 +6,7 @@ namespace Src\Shared\Application\Port;
 
 /**
  * Tabla `comercial.auditoria_log`. Servicio transversal, no es un caso de uso:
- * lo invocan los handlers que cambian datos sensibles.
+ * lo invocan los casos de uso que cambian datos sensibles.
  */
 interface AuditLogger
 {

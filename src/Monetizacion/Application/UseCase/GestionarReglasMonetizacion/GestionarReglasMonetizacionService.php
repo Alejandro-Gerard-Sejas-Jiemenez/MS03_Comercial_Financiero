@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace Src\Monetizacion\Application\UseCase\GestionarReglasMonetizacion;
 
 use DateTimeImmutable;
-use Src\Monetizacion\Domain\Concepto;
-use Src\Monetizacion\Domain\EstadoRegla;
-use Src\Monetizacion\Domain\ReglaMonetizacion;
-use Src\Monetizacion\Domain\ReglaMonetizacionRepository;
-use Src\Monetizacion\Domain\TipoCalculo;
+use Src\Monetizacion\Application\Port\ReglaMonetizacionRepository;
+use Src\Monetizacion\Application\Response\ReglaMonetizacionResponse;
+use Src\Monetizacion\Domain\Entity\ReglaMonetizacion;
+use Src\Monetizacion\Domain\Enum\Concepto;
+use Src\Monetizacion\Domain\Enum\EstadoRegla;
+use Src\Monetizacion\Domain\Enum\TipoCalculo;
 use Src\Shared\Application\Port\AuditLogger;
 use Src\Shared\Application\Port\Clock;
 use Src\Shared\Application\Port\UuidGenerator;
@@ -17,17 +18,8 @@ use Src\Shared\Domain\Exception\RecursoNoEncontrado;
 use Src\Shared\Domain\Exception\ReglaDeNegocioViolada;
 use Src\Shared\Domain\Money;
 
-/**
- * CU-MON-01 GestionarReglasMonetizacion (CRUD, disparador REST).
- *
- * El CRUD puro va junto en un servicio `Gestionar...`, como decide el documento
- * de arquitectura: abrir un Command + Handler por cada verbo solo agregaria
- * clases sin agregar reglas. Las reglas de la entidad siguen en el Dominio.
- *
- * Autorizacion: solo el Administrador escribe; MS-04 consulta `vigentes()`.
- * Esa comprobacion la hara el middleware de la capa de Presentacion.
- */
-final class GestionarReglasMonetizacionService
+/** Caso de uso GestionarReglasMonetizacion: implementa la interfaz de entrada GestionarReglasMonetizacionUseCase. */
+final class GestionarReglasMonetizacionService implements GestionarReglasMonetizacionUseCase
 {
     public function __construct(
         private readonly ReglaMonetizacionRepository $reglas,
@@ -36,7 +28,7 @@ final class GestionarReglasMonetizacionService
         private readonly AuditLogger $auditoria,
     ) {}
 
-    public function crear(CrearReglaCommand $comando): ReglaMonetizacion
+    public function crear(CrearReglaRequest $comando): ReglaMonetizacionResponse
     {
         $regla = $comando->tipoCalculo === TipoCalculo::PORCENTAJE
             ? ReglaMonetizacion::porPorcentaje(
@@ -80,10 +72,10 @@ final class GestionarReglasMonetizacionService
             $comando->creadoPor,
         );
 
-        return $regla;
+        return ReglaMonetizacionResponse::desde($regla);
     }
 
-    public function actualizar(ActualizarReglaCommand $comando): ReglaMonetizacion
+    public function actualizar(ActualizarReglaRequest $comando): ReglaMonetizacionResponse
     {
         $regla = $this->obligatoria($comando->reglaId);
         $antes = $this->retrato($regla);
@@ -114,14 +106,14 @@ final class GestionarReglasMonetizacionService
             $comando->actualizadoPor,
         );
 
-        return $regla;
+        return ReglaMonetizacionResponse::desde($regla);
     }
 
     /**
      * Las reglas no se borran: se desactivan. El historico de comisiones ya
      * calculadas guarda su propia tarifa, asi que nada cambia hacia atras.
      */
-    public function desactivar(string $reglaId, string $desactivadoPor): ReglaMonetizacion
+    public function desactivar(string $reglaId, string $desactivadoPor): ReglaMonetizacionResponse
     {
         $regla = $this->obligatoria($reglaId);
         $antes = $this->retrato($regla);
@@ -138,20 +130,20 @@ final class GestionarReglasMonetizacionService
             $desactivadoPor,
         );
 
-        return $regla;
+        return ReglaMonetizacionResponse::desde($regla);
     }
 
     /** @return list<ReglaMonetizacion> */
     public function listar(?Concepto $concepto = null, ?EstadoRegla $estado = null): array
     {
-        return $this->reglas->listar($concepto, $estado);
+        return array_map(ReglaMonetizacionResponse::desde(...), $this->reglas->listar($concepto, $estado));
     }
 
     /**
      * Reglas que rigen hoy (o en la fecha dada). Es la consulta que usa MS-04
      * para la tarifa sugerida de F11.
      *
-     * @return list<ReglaMonetizacion>
+     * @return list<ReglaMonetizacionResponse>
      */
     public function vigentes(
         Concepto $concepto,
@@ -159,17 +151,17 @@ final class GestionarReglasMonetizacionService
         ?string $categoriaAlojamiento = null,
         ?string $nivelAnfitrion = null,
     ): array {
-        return $this->reglas->vigentes(
+        return array_map(ReglaMonetizacionResponse::desde(...), $this->reglas->vigentes(
             $concepto,
             $fecha ?? $this->clock->hoy(),
             $categoriaAlojamiento,
             $nivelAnfitrion,
-        );
+        ));
     }
 
-    public function consultar(string $reglaId): ReglaMonetizacion
+    public function consultar(string $reglaId): ReglaMonetizacionResponse
     {
-        return $this->obligatoria($reglaId);
+        return ReglaMonetizacionResponse::desde($this->obligatoria($reglaId));
     }
 
     private function obligatoria(string $reglaId): ReglaMonetizacion
