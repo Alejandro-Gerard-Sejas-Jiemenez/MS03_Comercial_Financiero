@@ -4,7 +4,7 @@ import { ApplicationRef } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { AppComponent } from './app/app.component';
 import { appConfig } from './app/app.config';
-import { SesionExterna, usarSesionExterna } from './app/nucleo';
+import { SesionExterna, usarSesionExterna } from './app/core/sesion';
 
 /**
  * Punto de entrada para el shell single-spa: exporta el ciclo de vida en vez de arrancar solo.

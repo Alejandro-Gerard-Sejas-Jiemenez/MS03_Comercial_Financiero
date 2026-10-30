@@ -1,8 +1,8 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
-import App from './App'
-import { iniciarSesion } from './auth'
+import App from '@/App'
+import { iniciarSesion } from '@/api/auth'
 
 // Modo independiente: el portal pide su propio login. Dentro del shell single-spa
 // se usa `spa-entry.tsx`, que comparte la sesion del shell.

@@ -6,8 +6,8 @@ Arquitectura del documento del proyecto (sección 5): microfrontends integrados 
 | Carpeta | Tecnología | Rol | Ruta en el shell |
 |---|---|---|---|
 | `shell/` | single-spa + Vite | Login, rutas y montaje | `http://localhost:9000` |
-| `portal-react/` | React + TypeScript | CLIENTE y ANFITRION | `/portal/*` |
-| `admin-angular/` | Angular + TypeScript | ADMIN | `/admin/*` |
+| `portal-react/` | React + TypeScript + Tailwind | CLIENTE y ANFITRION | `/portal/*` |
+| `admin-angular/` | Angular + TypeScript + Tailwind | ADMIN | `/admin/*` |
 
 Falta (no es de MS-03): la app móvil React Native, el API Gateway y el GraphQL BFF.
 
@@ -33,7 +33,14 @@ cd frontend/admin-angular && npm start       # http://localhost:4200, con su pro
 
 ## Usuarios de prueba (realm `alojate`, clave `clave123`)
 
-`admin1` (ADMIN) · `anfi1` (ANFITRION) · `cli1` (CLIENTE) · `ambos1` (CLIENTE y ANFITRION)
+| Usuario | Rol | Entra a |
+|---|---|---|
+| `admin1` | ADMIN | `/admin` (administración) |
+| `anfi1` | ANFITRION | `/portal` |
+| `cli1` | CLIENTE | `/portal` |
+| `ambos1` | CLIENTE y ANFITRION | `/portal` |
+
+Un usuario con rol ADMIN entra a `/admin`; cualquier otro, a `/portal`. Si abre la sección que no le corresponde, ve un aviso.
 
 ## Cómo se integran
 
@@ -45,4 +52,3 @@ Keycloak** (`token()`, roles, usuario, salir), de modo que no vuelven a iniciar 
 ## Backend
 
 La API permite estos orígenes por CORS: `COMERCIAL_CORS_ORIGINS` (5173, 4200, 9000 y 3000 por omisión).
-Documentación interactiva de la API: `http://localhost:8000/docs`.

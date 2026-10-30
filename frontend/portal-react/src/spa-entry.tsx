@@ -1,6 +1,6 @@
 import { createRoot, type Root } from 'react-dom/client'
-import App from './App'
-import { usarSesionExterna, type SesionExterna } from './auth'
+import App from '@/App'
+import { usarSesionExterna, type SesionExterna } from '@/api/auth'
 import estilos from './index.css?inline'
 
 /**

@@ -1,66 +1,139 @@
-:root {
-  --fondo: #f5f6f8;
-  --tarjeta: #ffffff;
-  --texto: #1c2430;
-  --suave: #6b7686;
-  --borde: #dfe3ea;
-  --marca: #0f766e;
-  --marca-oscuro: #0b5a54;
-  --ok: #15803d;
-  --espera: #b45309;
-  --mal: #b91c1c;
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  color: var(--texto);
-  background: var(--fondo);
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Todo va bajo `.ms03-admin`: la administracion convive con el shell en la misma pagina. */
+@layer base {
+  .ms03-admin {
+    @apply min-h-screen bg-surface-secondary font-sans text-ink-primary antialiased;
+    line-height: 1.5;
+  }
+
+  .ms03-admin *,
+  .ms03-admin *::before,
+  .ms03-admin *::after {
+    box-sizing: border-box;
+    border: 0 solid theme('colors.line.DEFAULT');
+  }
+
+  .ms03-admin :is(h1, h2, h3, h4, p, dl, dd, ul) {
+    margin: 0;
+  }
+
+  .ms03-admin :is(h1, h2, h3, h4) {
+    @apply text-ink-primary;
+    line-height: 1.2;
+  }
+
+  .ms03-admin :is(button, input, select) {
+    font: inherit;
+    color: inherit;
+    margin: 0;
+  }
+
+  .ms03-admin a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .ms03-admin table {
+    border-collapse: collapse;
+  }
+
+  .ms03-admin *:focus-visible {
+    @apply outline-none ring-2 ring-brand-primary ring-offset-2 ring-offset-surface-base;
+  }
 }
-* { box-sizing: border-box; }
-body { margin: 0; }
-h2 { margin: 0 0 12px; }
-h3 { margin: 24px 0 8px; }
 
-.barra { display: flex; align-items: center; gap: 24px; padding: 12px 24px; background: var(--tarjeta); border-bottom: 1px solid var(--borde); position: sticky; top: 0; }
-.barra nav { display: flex; gap: 16px; flex: 1; }
-.barra nav a { color: var(--suave); text-decoration: none; padding: 4px 2px; }
-.barra nav a.active { color: var(--marca); border-bottom: 2px solid var(--marca); }
-.usuario { display: flex; align-items: center; gap: 12px; color: var(--suave); font-size: 14px; }
-main { max-width: 1000px; margin: 24px auto; padding: 0 16px; }
+@layer components {
+  .ms03-admin .btn {
+    @apply inline-flex cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-50;
+  }
 
-.titulo { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-.titulo h2 { margin: 0; flex: 1; }
+  .ms03-admin .btn-sm {
+    @apply !px-3 !py-1.5 !text-xs;
+  }
 
-table { width: 100%; border-collapse: collapse; background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 8px; overflow: hidden; }
-th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--borde); font-size: 14px; }
-th { color: var(--suave); font-weight: 600; background: #fafbfc; }
-tr:last-child td { border-bottom: 0; }
+  .ms03-admin .btn-primary {
+    @apply bg-brand-primary text-white hover:bg-brand-hover;
+  }
 
-.tarjeta { background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 8px; padding: 16px; margin: 12px 0; }
-.tarjeta dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 24px; margin: 0 0 12px; }
-.tarjeta dt { color: var(--suave); }
-.tarjeta dd { margin: 0; }
-.saldo strong { display: block; font-size: 28px; margin-top: 4px; }
+  .ms03-admin .btn-secondary {
+    @apply border border-line bg-surface-base text-ink-primary hover:bg-surface-secondary;
+  }
 
-.formulario { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; align-items: end; background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
-label { display: grid; gap: 4px; font-size: 13px; color: var(--suave); }
-input, select { padding: 8px 10px; border: 1px solid var(--borde); border-radius: 6px; font: inherit; color: var(--texto); background: #fff; }
+  .ms03-admin .btn-ghost {
+    @apply bg-transparent text-ink-secondary hover:bg-surface-secondary;
+  }
 
-button, .boton { background: var(--marca); color: #fff; border: 0; border-radius: 6px; padding: 8px 14px; font: inherit; cursor: pointer; text-decoration: none; display: inline-block; }
-button:hover, .boton:hover { background: var(--marca-oscuro); }
-button:disabled { opacity: 0.5; cursor: not-allowed; }
-button.secundario { background: #fff; color: var(--marca); border: 1px solid var(--marca); }
-button.peligro { background: #fff; color: var(--mal); border: 1px solid var(--mal); }
-.acciones { display: flex; gap: 8px; flex-wrap: wrap; }
+  .ms03-admin .btn-danger {
+    @apply border border-red-200 bg-surface-base text-danger hover:bg-red-50;
+  }
 
-.insignia { padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; background: #eceff3; color: var(--suave); }
-.insignia.ok { background: #dcfce7; color: var(--ok); }
-.insignia.espera { background: #fef3c7; color: var(--espera); }
-.insignia.mal { background: #fee2e2; color: var(--mal); }
+  .ms03-admin .input {
+    @apply w-full rounded-lg border border-line bg-surface-base px-3.5 py-2.5 text-sm text-ink-primary transition-colors placeholder:text-ink-secondary/70 focus:border-brand-primary;
+  }
 
-.aviso { padding: 10px 12px; border-radius: 6px; margin: 12px 0; font-size: 14px; }
-.aviso.error { background: #fee2e2; color: var(--mal); }
-.aviso.ok { background: #dcfce7; color: var(--ok); }
-.suave { color: var(--suave); font-size: 14px; }
+  .ms03-admin .label {
+    @apply mb-1.5 block text-sm font-medium text-ink-primary;
+  }
 
-label.motivo { margin-bottom: 12px; max-width: 520px; }
-td.acciones { display: table-cell; }
-td.acciones button { margin-right: 6px; }
-input[type='checkbox'] { width: 18px; height: 18px; }
+  .ms03-admin .card {
+    @apply rounded-xl border border-line bg-surface-base shadow-card;
+  }
+
+  /* Formulario en tarjeta: 1 columna en movil, 2 en tablet y 4 en escritorio. */
+  .ms03-admin .form-grid {
+    @apply mb-6 grid grid-cols-1 items-end gap-4 rounded-xl border border-line bg-surface-base p-5 shadow-card sm:grid-cols-2 lg:grid-cols-4;
+  }
+
+  .ms03-admin .table {
+    @apply w-full overflow-hidden text-left text-sm;
+  }
+
+  .ms03-admin .table th {
+    @apply border-b border-line bg-surface-secondary px-4 py-3 text-xs font-semibold uppercase tracking-wide text-ink-secondary;
+  }
+
+  .ms03-admin .table td {
+    @apply border-b border-line px-4 py-3 text-ink-primary;
+  }
+
+  .ms03-admin .table tbody tr:last-child td {
+    @apply border-b-0;
+  }
+
+  .ms03-admin .badge {
+    @apply inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium;
+  }
+
+  .ms03-admin .badge-ok {
+    @apply border-green-200 bg-green-50 text-positive;
+  }
+
+  .ms03-admin .badge-espera {
+    @apply border-amber-200 bg-amber-50 text-amber-700;
+  }
+
+  .ms03-admin .badge-mal {
+    @apply border-red-200 bg-red-50 text-danger;
+  }
+
+  .ms03-admin .badge-neutro {
+    @apply border-line bg-surface-secondary text-ink-secondary;
+  }
+
+  .ms03-admin .alerta {
+    @apply my-4 rounded-lg border px-4 py-3 text-sm;
+  }
+
+  .ms03-admin .alerta-error {
+    @apply border-red-200 bg-red-50 text-danger;
+  }
+
+  .ms03-admin .alerta-ok {
+    @apply border-green-200 bg-green-50 text-positive;
+  }
+}
